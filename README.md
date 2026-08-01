@@ -4,154 +4,538 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PR-EOS Density &amp; Cp Calculator | C1-C3 Light Hydrocarbons</title>
+<!-- Google Fonts for sleek tech aesthetic -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg: #0f1417;
-    --panel: #161d22;
-    --panel2: #1b2329;
-    --border: #2a343b;
-    --text: #d8e0e3;
-    --text-dim: #7c8a92;
+  :root {
+    --bg: #0b0f12;
+    --panel: #13191e;
+    --panel-hover: #182027;
+    --panel2: #192229;
+    --border: #26333d;
+    --border-focus: #4fb3a9;
+    --text: #e2e8f0;
+    --text-dim: #8b9da9;
     --accent: #4fb3a9;
+    --accent-glow: rgba(79, 179, 169, 0.25);
     --accent2: #e8a23d;
-    --vapor: #5b9bd5;
-    --liquid: #4fb3a9;
-    --mono: 'IBM Plex Mono', 'Consolas', monospace;
-    --sans: 'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
+    --vapor: #60a5fa;
+    --vapor-glow: rgba(96, 165, 250, 0.2);
+    --liquid: #34d399;
+    --liquid-glow: rgba(52, 211, 153, 0.2);
+    --mono: 'Fira Code', 'IBM Plex Mono', monospace;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:var(--sans); font-size:14px; line-height:1.5;
+  
+  * { box-sizing: border-box; }
+  
+  body {
+    margin: 0; 
+    background: var(--bg); 
+    color: var(--text);
+    font-family: var(--sans); 
+    font-size: 14px; 
+    line-height: 1.6;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(79, 179, 169, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(96, 165, 250, 0.05) 0%, transparent 40%);
+    background-attachment: fixed;
   }
-  header{
-    padding:20px 28px 16px; border-bottom:1px solid var(--border);
-    display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;
+  
+  header {
+    padding: 24px 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 12px;
+    background: rgba(19, 25, 30, 0.8);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-  header h1{
-    font-family:var(--mono); font-size:17px; font-weight:600; margin:0; letter-spacing:0.5px;
-    color:var(--text);
+  
+  header h1 {
+    font-family: var(--mono); 
+    font-size: 18px; 
+    font-weight: 700; 
+    margin: 0; 
+    letter-spacing: 0.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  header h1 span{color:var(--accent);}
-  header .sub{font-size:12px; color:var(--text-dim); font-family:var(--mono);}
-  main{max-width:1180px; margin:0 auto; padding:24px 20px 60px;}
-  .grid{display:grid; grid-template-columns: 380px 1fr; gap:20px;}
-  @media (max-width:880px){.grid{grid-template-columns:1fr;}}
-
-  .panel{background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:18px 20px;}
-  .panel + .panel{margin-top:16px;}
-  .panel h2{
-    font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:1px;
-    color:var(--text-dim); margin:0 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  
+  header h1 span {
+    color: var(--accent);
+    text-shadow: 0 0 12px var(--accent-glow);
+  }
+  
+  header .sub {
+    font-size: 12px; 
+    color: var(--text-dim); 
+    font-family: var(--mono);
+    background: var(--panel2);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  
+  main {
+    max-width: 1240px; 
+    margin: 0 auto; 
+    padding: 32px 24px 60px;
+  }
+  
+  .grid {
+    display: grid; 
+    grid-template-columns: 400px 1fr; 
+    gap: 24px;
+  }
+  
+  @media (max-width: 920px) {
+    .grid { grid-template-columns: 1fr; }
   }
 
-  label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px; margin-top:12px;}
-  label:first-of-type{margin-top:0;}
-  input[type=number], select{
-    width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:4px;
-    color:var(--text); padding:8px 10px; font-family:var(--mono); font-size:13px;
+  .panel {
+    background: var(--panel); 
+    border: 1px solid var(--border); 
+    border-radius: 12px; 
+    padding: 22px 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, border-color 0.2s ease;
   }
-  input[type=number]:focus, select:focus{outline:none; border-color:var(--accent);}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-
-  .phase-toggle{display:flex; border:1px solid var(--border); border-radius:4px; overflow:hidden; margin-top:12px;}
-  .phase-toggle button{
-    flex:1; background:var(--panel2); border:none; color:var(--text-dim); padding:9px 0;
-    font-family:var(--mono); font-size:12px; cursor:pointer; transition:.15s;
+  
+  .panel + .panel { margin-top: 20px; }
+  
+  .panel h2 {
+    font-family: var(--mono); 
+    font-size: 11px; 
+    text-transform: uppercase; 
+    letter-spacing: 1.5px;
+    color: var(--text-dim); 
+    margin: 0 0 16px; 
+    padding-bottom: 10px; 
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-  .phase-toggle button.active{background:var(--accent); color:#08110f; font-weight:600;}
 
-  .comp-table{width:100%; border-collapse:collapse; margin-top:6px;}
-  .comp-table th{
-    text-align:left; font-size:10px; color:var(--text-dim); font-weight:500; padding:4px 6px;
-    text-transform:uppercase; letter-spacing:0.5px;
+  label {
+    display: block; 
+    font-size: 12px; 
+    font-weight: 500;
+    color: var(--text-dim); 
+    margin-bottom: 6px; 
+    margin-top: 14px;
   }
-  .comp-table td{padding:3px 6px;}
-  .comp-table input[type=number]{padding:5px 8px; font-size:12px;}
-  .comp-table td:first-child{font-family:var(--mono); font-size:12px; white-space:nowrap;}
-  .comp-sum{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:8px; text-align:right;}
-  .comp-sum.err{color:#e06c5c;}
-
-  button.calc{
-    width:100%; margin-top:16px; background:var(--accent); color:#08110f; border:none;
-    border-radius:4px; padding:11px 0; font-family:var(--mono); font-size:13px; font-weight:700;
-    letter-spacing:0.5px; cursor:pointer; text-transform:uppercase;
+  
+  label:first-of-type { margin-top: 0; }
+  
+  input[type=number], select {
+    width: 100%; 
+    background: var(--panel2); 
+    border: 1px solid var(--border); 
+    border-radius: 8px;
+    color: var(--text); 
+    padding: 10px 12px; 
+    font-family: var(--mono); 
+    font-size: 13px;
+    transition: all 0.2s ease;
   }
-  button.calc:hover{background:#63c2b8;}
-
-  .results-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:14px;}
-  .result-card{
-    background:var(--panel2); border:1px solid var(--border); border-radius:5px; padding:14px 16px;
+  
+  input[type=number]:focus, select:focus {
+    outline: none; 
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--panel);
   }
-  .result-card .label{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px;}
-  .result-card .value{font-family:var(--mono); font-size:24px; font-weight:600; margin-top:4px;}
-  .result-card .unit{font-size:12px; color:var(--text-dim); margin-left:4px;}
-  .result-card.vapor .value{color:var(--vapor);}
-  .result-card.liquid .value{color:var(--liquid);}
-
-  .detail-table{width:100%; border-collapse:collapse; margin-top:16px; font-family:var(--mono); font-size:12px;}
-  .detail-table td{padding:6px 10px; border-bottom:1px solid var(--border);}
-  .detail-table td:first-child{color:var(--text-dim); width:55%;}
-  .detail-table td:last-child{text-align:right;}
-
-  .warn{
-    background:#2a1f14; border:1px solid #5c4423; color:#e8a23d; border-radius:4px;
-    padding:10px 12px; font-size:12px; margin-top:12px; display:none;
+  
+  .row2 {
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px;
   }
-  .warn.show{display:block;}
 
-  .footer-note{margin-top:20px; font-size:11px; color:var(--text-dim); line-height:1.6;}
-  .footer-note code{background:var(--panel2); padding:1px 5px; border-radius:3px;}
-
-  .placeholder{color:var(--text-dim); font-size:13px; text-align:center; padding:60px 20px;}
-
-  .mode-toggle{display:flex; gap:8px; margin-bottom:20px;}
-  .mode-toggle button{
-    background:var(--panel); border:1px solid var(--border); color:var(--text-dim);
-    padding:10px 20px; border-radius:6px; font-family:var(--mono); font-size:12px;
-    letter-spacing:0.5px; cursor:pointer; font-weight:600;
+  .phase-toggle {
+    display: flex; 
+    background: var(--panel2);
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    overflow: hidden; 
+    margin-top: 12px;
+    padding: 3px;
+    gap: 4px;
   }
-  .mode-toggle button.active{background:var(--accent); color:#08110f; border-color:var(--accent);}
-
-  .flash-table{width:100%; border-collapse:collapse; margin-top:10px; font-family:var(--mono); font-size:12px;}
-  .flash-table th{
-    text-align:right; font-size:10px; color:var(--text-dim); font-weight:500; padding:6px 8px;
-    text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border);
+  
+  .phase-toggle button {
+    flex: 1; 
+    background: transparent; 
+    border: none; 
+    color: var(--text-dim); 
+    padding: 8px 0;
+    font-family: var(--mono); 
+    font-size: 12px; 
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer; 
+    transition: all 0.2s ease;
   }
-  .flash-table th:first-child{text-align:left;}
-  .flash-table td{padding:6px 8px; text-align:right; border-bottom:1px solid var(--border);}
-  .flash-table td:first-child{text-align:left; color:var(--text);}
-  .flash-table .kcol{color:var(--accent2);}
-
-  .beta-bar-wrap{margin:16px 0; background:var(--panel2); border-radius:5px; overflow:hidden; height:34px; position:relative; border:1px solid var(--border);}
-  .beta-bar-liquid{position:absolute; left:0; top:0; bottom:0; background:var(--liquid); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#08110f; font-weight:700;}
-  .beta-bar-vapor{position:absolute; right:0; top:0; bottom:0; background:var(--vapor); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#08110f; font-weight:700;}
-
-  .export-toolbar{display:flex; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
-  .export-toolbar button{
-    flex:1; background:var(--panel2); border:1px solid var(--border); color:var(--text);
-    padding:9px 10px; border-radius:5px; font-family:var(--mono); font-size:11px;
-    letter-spacing:0.3px; cursor:pointer; font-weight:600;
+  
+  .phase-toggle button.active {
+    background: var(--accent); 
+    color: #08110f; 
+    box-shadow: 0 2px 8px var(--accent-glow);
   }
-  .export-toolbar button:hover{border-color:var(--accent); color:var(--accent);}
 
-  #printMeta{display:none;}
+  .comp-table {
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0 4px;
+    margin-top: 8px;
+  }
+  
+  .comp-table th {
+    text-align: left; 
+    font-size: 11px; 
+    color: var(--text-dim); 
+    font-weight: 600; 
+    padding: 4px 8px;
+    text-transform: uppercase; 
+    letter-spacing: 0.5px;
+  }
+  
+  .comp-table td { padding: 2px 4px; }
+  .comp-table tr { transition: background 0.15s ease; }
+  .comp-table input[type=number] { padding: 6px 10px; font-size: 12px; }
+  .comp-table td:first-child { font-family: var(--mono); font-size: 13px; font-weight: 500; padding-left: 8px; }
+  
+  .comp-sum {
+    font-family: var(--mono); 
+    font-size: 12px; 
+    color: var(--text-dim); 
+    margin-top: 12px; 
+    text-align: right;
+    padding: 6px 10px;
+    background: var(--panel2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+  
+  .comp-sum.err {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.4);
+    background: rgba(248, 113, 113, 0.05);
+  }
+
+  button.calc {
+    width: 100%; 
+    margin-top: 20px; 
+    background: linear-gradient(135deg, var(--accent) 0%, #3ba298 100%); 
+    color: #08110f; 
+    border: none;
+    border-radius: 8px; 
+    padding: 13px 0; 
+    font-family: var(--mono); 
+    font-size: 13px; 
+    font-weight: 700;
+    letter-spacing: 1px; 
+    cursor: pointer; 
+    text-transform: uppercase;
+    box-shadow: 0 4px 14px var(--accent-glow);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  button.calc:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+    filter: brightness(1.1);
+  }
+  
+  button.calc:active {
+    transform: translateY(0);
+  }
+
+  .results-grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .result-card {
+    background: var(--panel2); 
+    border: 1px solid var(--border); 
+    border-radius: 10px; 
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--border);
+  }
+  
+  .result-card .label {
+    font-size: 11px; 
+    color: var(--text-dim); 
+    text-transform: uppercase; 
+    letter-spacing: 0.8px;
+    font-weight: 600;
+  }
+  
+  .result-card .value {
+    font-family: var(--mono); 
+    font-size: 26px; 
+    font-weight: 700; 
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  
+  .result-card .unit {
+    font-size: 12px; 
+    color: var(--text-dim); 
+    margin-left: 4px;
+    font-weight: 400;
+  }
+  
+  .result-card.vapor::before { background: var(--vapor); }
+  .result-card.vapor .value { color: var(--vapor); text-shadow: 0 0 10px var(--vapor-glow); }
+  
+  .result-card.liquid::before { background: var(--liquid); }
+  .result-card.liquid .value { color: var(--liquid); text-shadow: 0 0 10px var(--liquid-glow); }
+
+  .detail-table {
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 16px; 
+    font-family: var(--mono); 
+    font-size: 12px;
+  }
+  
+  .detail-table td {
+    padding: 10px 12px; 
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .detail-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .detail-table td:first-child {
+    color: var(--text-dim); 
+    width: 55%;
+    font-family: var(--sans);
+  }
+  
+  .detail-table td:last-child {
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .warn {
+    background: rgba(232, 162, 61, 0.1); 
+    border: 1px solid rgba(232, 162, 61, 0.3); 
+    color: var(--accent2); 
+    border-radius: 8px;
+    padding: 12px 16px; 
+    font-size: 12px; 
+    margin-top: 16px; 
+    display: none;
+    line-height: 1.5;
+  }
+  
+  .warn.show { display: block; animation: fadeIn 0.3s ease; }
+
+  .footer-note {
+    margin-top: 24px; 
+    font-size: 12px; 
+    color: var(--text-dim); 
+    line-height: 1.6;
+    background: rgba(19, 25, 30, 0.5);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  
+  .footer-note code {
+    background: var(--panel2); 
+    padding: 2px 6px; 
+    border-radius: 4px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .placeholder {
+    color: var(--text-dim); 
+    font-size: 14px; 
+    text-align: center; 
+    padding: 80px 20px;
+    background: var(--panel2);
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+  }
+
+  .mode-toggle {
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 24px;
+    background: var(--panel);
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+  
+  .mode-toggle button {
+    background: transparent; 
+    border: none;
+    color: var(--text-dim);
+    padding: 10px 20px; 
+    border-radius: 7px; 
+    font-family: var(--mono); 
+    font-size: 12px;
+    letter-spacing: 0.5px; 
+    cursor: pointer; 
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  
+  .mode-toggle button:hover {
+    color: var(--text);
+  }
+  
+  .mode-toggle button.active {
+    background: var(--accent); 
+    color: #08110f; 
+    box-shadow: 0 2px 10px var(--accent-glow);
+  }
+
+  .flash-table {
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 12px; 
+    font-family: var(--mono); 
+    font-size: 12px;
+  }
+  
+  .flash-table th {
+    text-align: right; 
+    font-size: 10px; 
+    color: var(--text-dim); 
+    font-weight: 600; 
+    padding: 8px 10px;
+    text-transform: uppercase; 
+    letter-spacing: 0.5px; 
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .flash-table th:first-child { text-align: left; }
+  .flash-table td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+  .flash-table td:first-child { text-align: left; color: var(--text); font-weight: 500; }
+  .flash-table .kcol { color: var(--accent2); }
+
+  .export-toolbar {
+    display: flex; 
+    gap: 10px; 
+    margin-top: 20px; 
+    padding-top: 16px; 
+    border-top: 1px solid var(--border);
+  }
+  
+  .export-toolbar button {
+    flex: 1; 
+    background: var(--panel2); 
+    border: 1px solid var(--border); 
+    color: var(--text);
+    padding: 10px 12px; 
+    border-radius: 8px; 
+    font-family: var(--mono); 
+    font-size: 11px;
+    letter-spacing: 0.3px; 
+    cursor: pointer; 
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .export-toolbar button:hover {
+    border-color: var(--accent); 
+    color: var(--accent);
+    background: var(--panel-hover);
+    transform: translateY(-1px);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 32px 24px;
+    margin-top: 40px;
+  }
+
+  footer h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-family: var(--mono);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  footer p {
+    margin: 4px 0;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  footer a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  #printMeta { display: none; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   @media print {
-    body{background:#fff; color:#000;}
-    header, .mode-toggle, .grid > div:first-child, .footer-note, .export-toolbar, .warn{
-      display:none !important;
+    body { background: #fff; color: #000; }
+    header, .mode-toggle, .grid > div:first-child, .footer-note, .export-toolbar, .warn, footer {
+      display: none !important;
     }
-    .grid{display:block;}
-    .panel{border:none; background:#fff; padding:0;}
-    .result-card{border:1px solid #999; background:#fff;}
-    .result-card .value, .result-card .label{color:#000;}
-    .detail-table td, .flash-table td, .flash-table th{color:#000; border-color:#ccc;}
-    #printMeta{
-      display:block; font-family:var(--sans); font-size:11px; color:#333;
-      margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid #333;
+    .grid { display: block; }
+    .panel { border: none; background: #fff; padding: 0; box-shadow: none; }
+    .result-card { border: 1px solid #999; background: #fff; }
+    .result-card .value, .result-card .label { color: #000 !important; text-shadow: none !important; }
+    .detail-table td, .flash-table td, .flash-table th { color: #000; border-color: #ccc; }
+    #printMeta {
+      display: block; font-family: var(--sans); font-size: 11px; color: #333;
+      margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #333;
     }
-    main{max-width:100%; padding:0;}
+    main { max-width: 100%; padding: 0; }
   }
 </style>
 </head>
@@ -418,6 +802,16 @@
   </div><!-- /cvMode -->
 </main>
 
+<footer class="no-print">
+  <div style="max-width: 1240px; margin: 0 auto;">
+    <h3>Developer Information</h3>
+    <p><strong>Gajanand Yadav</strong></p>
+    <p>Chemical Engineer, IIT Guwahati</p>
+    <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+       Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
+  </div>
+</footer>
+
 <script>
 // ============================================================
 // Peng-Robinson EOS engine (mirrors pr_core.py logic)
@@ -576,11 +970,6 @@ function jstResidual(rhoR){
 }
 
 function viscosity(comps, zIn, T, P, phase){
-  // Returns viscosity [cP] via pseudo-critical (Kay's rule) mixing + JST
-  // residual correlation. Approximate method: typically within 5-10% for
-  // nonpolar hydrocarbons/gases (validated against literature for methane,
-  // propane, nitrogen, and liquid propane); less accurate for water (polar)
-  // and hydrogen (quantum effects) - treat those as indicative only.
   const sum = zIn.reduce((a,b)=>a+b,0);
   const z = zIn.map(v=>v/sum);
   const n = comps.length;
@@ -611,15 +1000,6 @@ function viscosity(comps, zIn, T, P, phase){
 
 // ============================================================
 // Water/steam properties via correlations fitted against IAPWS-IF97
-// (the industry-standard steam table formulation), used in place of PR EOS
-// for PURE water only - replacing a known PR-EOS accuracy limitation for
-// polar/associating fluids. Mixtures containing water still use PR EOS with
-// the existing water-hydrocarbon kij, since rigorous multi-fluid steam+HC
-// mixing is beyond this tool's scope.
-// Liquid correlations are T-only (pressure effect on liquid water density/
-// Cp/viscosity confirmed <1% across 5-100 bar during development). Steam
-// (vapor) correlations are T,P-dependent with a saturation-proximity term.
-// Validated: liquid density/Cp within 0.05% of IAPWS-IF97, steam within ~2%.
 // ============================================================
 const ANTOINE_WATER_STEAM = [
   [275.00, 370.00, 5.20793, 1737.6641, -39.0485],
@@ -706,8 +1086,6 @@ function muSteam(T, P){
 }
 
 function waterSteamProperties(T, P, phase){
-  // Returns {rho, cpMassKJ, cpMolar, mu_cP, V, Z} for PURE water via steam-table
-  // correlations. cpMolar in J/mol.K for consistency with the rest of the tool.
   const MW_WATER = 18.015;
   let rho, cpMass, mu;
   if(phase === "liquid"){
@@ -774,7 +1152,6 @@ function setBasis(tab, basis){
 }
 
 function wtToMol(comps, wtFractions){
-  // Convert weight fractions to mole fractions: mol_i proportional to w_i/MW_i, then normalize.
   const raw = comps.map((c,i)=> wtFractions[i]/COMPONENTS[c].MW);
   const sum = raw.reduce((a,b)=>a+b,0);
   return raw.map(v=>v/sum);
@@ -846,7 +1223,6 @@ function runCalc(){
     });
     if(comps.length===0) throw new Error("Enter at least one non-zero mole fraction.");
     if(Math.abs(sum-1) > 0.0005){
-      // normalize but warn
       z = z.map(v=>v/sum);
       warnBox.textContent = `Note: composition summed to ${sum.toFixed(4)}, auto-normalized to 1.0000.`;
       warnBox.classList.add("show");
@@ -872,14 +1248,12 @@ function runCalc(){
       visc = viscosity(comps, z, T, P, currentPhase);
     }
 
-    // Saturation temperature at input P (pure component only, via Antoine equation)
     let tsatInfo = null;
     if(comps.length === 1){
       const tsatK = tsatPure(comps[0], P);
       tsatInfo = (tsatK !== null) ? tsatK : "range";
     }
 
-    // IBP/FBP for mixtures (bubble/dew point at input P)
     let ibpFbpInfo = null;
     if(comps.length >= 2){
       const ibp = bubblePointT(comps, z, P);
@@ -887,11 +1261,9 @@ function runCalc(){
       ibpFbpInfo = {ibp, fbp};
     }
 
-    // Flash point estimate (fire safety) - applies to both pure and mixture
     const fpInfo = flashPointEstimate(comps, z);
 
-    // Reduced conditions warning (rough EOS validity check)
-    let TcMix = 0; // simple mole-fraction average as rough guide only
+    let TcMix = 0; 
     for(let i=0;i<comps.length;i++) TcMix += z[i]*COMPONENTS[comps[i]].Tc;
     if(T > 1.3*TcMix){
       warnBox.textContent += (warnBox.textContent? " " : "") + "Note: T is well above mixture pseudo-critical Tc — supercritical region, liquid root may not exist physically.";
@@ -936,8 +1308,8 @@ function renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo, vis
     fpRow = `<tr><td>Flash Point (estimated, 1 atm)</td><td>N/A &mdash; ${fpInfo.status}</td></tr>`;
   }
 
-  const cpMassJ = cp.Cp_real/(dz.MW/1000);       // J/kg.K
-  const cpMassKcal = cpMassJ / 4184;              // kcal/kg.K
+  const cpMassJ = cp.Cp_real/(dz.MW/1000);       
+  const cpMassKcal = cpMassJ / 4184;              
 
   let cpBreakdownRows;
   if(isPureWater){
@@ -1111,14 +1483,9 @@ function ptFlash(comps, zIn, T, P, maxIter=200, tol=1e-10){
 }
 
 // ============================================================
-// Flash UI wiring
-// ============================================================
-// ============================================================
 // Print PDF / Save Results export utilities
 // ============================================================
 function gatherInputsSummary(mode){
-  // Reads the current input fields for the given mode ('d','j','cv') and
-  // returns {lines: [...], html: "..."} for use in both print and text-save.
   const lines = [];
   const basisLabel = basisState[mode] === "wt" ? "Wt%" : "Mol%";
 
@@ -1168,10 +1535,6 @@ function gatherInputsSummary(mode){
 }
 
 function printResults(panelId, titleText, mode){
-  // Populate the hidden #printMeta block with a title, timestamp, and the
-  // current input values, then trigger the browser's print dialog. Print CSS
-  // hides everything except #printMeta and the currently visible results
-  // panel, so "Save as PDF" in the print dialog gives a clean, self-contained PDF.
   const meta = document.getElementById("printMeta");
   const now = new Date();
   const inputs = gatherInputsSummary(mode);
@@ -1197,7 +1560,6 @@ function saveResultsAsText(panelId, titleText, mode){
   lines.push("=".repeat(60));
   lines.push("");
 
-  // Walk the panel's headings, result cards, and table rows in document order.
   panel.childNodes.forEach(node => collectText(node, lines));
 
   function collectText(node, out){
@@ -1242,8 +1604,14 @@ function saveResultsAsText(panelId, titleText, mode){
 function exportToolbarHTML(panelId, titleText, mode){
   return `
     <div class="export-toolbar">
-      <button onclick="printResults('${panelId}','${titleText}','${mode}')">&#128438; PRINT / SAVE PDF</button>
-      <button onclick="saveResultsAsText('${panelId}','${titleText}','${mode}')">&#128190; SAVE RESULTS (.TXT)</button>
+      <button onclick="printResults('${panelId}','${titleText}','${mode}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+        PRINT / SAVE PDF
+      </button>
+      <button onclick="saveResultsAsText('${panelId}','${titleText}','${mode}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        SAVE RESULTS (.TXT)
+      </button>
     </div>`;
 }
 
@@ -1308,12 +1676,7 @@ function totalEnthalpy(comps, z, T, P){
     return {H, beta, x, y, Zl, Zv};
   }
 }
-// ============================================================
-// Antoine equation coefficients: log10(P[bar]) = A - B/(T[K]+C)
-// NIST-literature values where available, extended with fits against a
-// high-accuracy reference EOS (max error <1.4%, mostly <0.3%) to cover the
-// full range up to ~0.999*Tc where NIST's published range doesn't reach.
-// ============================================================
+
 const ANTOINE = {
   Methane: [
     [90.99, 189.99, 3.9895, 443.028, -0.49],
@@ -1362,10 +1725,6 @@ const ANTOINE = {
 };
 
 function tsatPure(comp, P){
-  // Direct closed-form Antoine solve: log10(P[bar]) = A - B/(T+C) => T = B/(A-log10P) - C
-  // More accurate than a PR-EOS fugacity-equality search (Antoine is fit to real
-  // experimental vapor-pressure data). Returns null if P is outside the
-  // correlation's validity range for this component.
   const Pbar = P / 1e5;
   if(Pbar <= 0) return null;
   const log10P = Math.log10(Pbar);
@@ -1788,9 +2147,6 @@ function calorificValue(comps, zIn, TrefC){
   return {MWmix, GCVmolar, NCVmolar, GCVmass, NCVmass, GCVvol, NCVvol, SG, wobbeGross, wobbeNet, TrefC};
 }
 
-// ============================================================
-// CV UI wiring
-// ============================================================
 function buildCVCompTable(){
   const tbody = document.querySelector("#cvCompTable tbody");
   tbody.innerHTML = "";
