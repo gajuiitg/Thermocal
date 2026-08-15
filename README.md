@@ -416,7 +416,7 @@
     </div>
   </div><!-- /cvMode -->
 </main>
-
+<script>
 <footer class="no-print">
   <h3>Developer Information</h3>
   <p><strong>Gajanand Yadav</strong></p>
@@ -426,8 +426,7 @@
   <p>For Hydraulic calculation </p> 
   <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
 </footer>
-<script>
-// ============================================================
+  // ============================================================
 // Peng-Robinson EOS engine (mirrors pr_core.py logic)
 // ============================================================
 const R = 8.314462618; // J/mol.K
