@@ -424,6 +424,8 @@
   <p>Chemical Engineer, IIT Guwahati</p>
   <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
      Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
+  <p>For Hydraulic calculation </p> 
+  <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
 </footer>
 <script>
 // ============================================================
