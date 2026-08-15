@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,16 +5,16 @@
 <title>PR-EOS Density &amp; Cp Calculator | C1-C3 Light Hydrocarbons</title>
 <style>
   :root{
-    --bg: #0f1417;
-    --panel: #161d22;
-    --panel2: #1b2329;
-    --border: #2a343b;  
-    --text: #d8e0e3;
-    --text-dim: #7c8a92;
-    --accent: #4fb3a9;
-    --accent2: #e8a23d;
-    --vapor: #5b9bd5;
-    --liquid: #4fb3a9;
+    --bg: #f3f6f8;
+    --panel: #ffffff;
+    --panel2: #f0f4f7;
+    --border: #d8e1e7;
+    --text: #1b2a33;
+    --text-dim: #556872;
+    --accent: #1f8fa8;
+    --accent2: #d97706;
+    --vapor: #1f5fa8;
+    --liquid: #0f8f73;
     --mono: 'IBM Plex Mono', 'Consolas', monospace;
     --sans: 'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
   }
@@ -59,7 +58,7 @@
     flex:1; background:var(--panel2); border:none; color:var(--text-dim); padding:9px 0;
     font-family:var(--mono); font-size:12px; cursor:pointer; transition:.15s;
   }
-  .phase-toggle button.active{background:var(--accent); color:#08110f; font-weight:600;}
+  .phase-toggle button.active{background:var(--accent); color:#ffffff; font-weight:600;}
 
   .comp-table{width:100%; border-collapse:collapse; margin-top:6px;}
   .comp-table th{
@@ -73,11 +72,11 @@
   .comp-sum.err{color:#e06c5c;}
 
   button.calc{
-    width:100%; margin-top:16px; background:var(--accent); color:#08110f; border:none;
+    width:100%; margin-top:16px; background:var(--accent); color:#ffffff; border:none;
     border-radius:4px; padding:11px 0; font-family:var(--mono); font-size:13px; font-weight:700;
     letter-spacing:0.5px; cursor:pointer; text-transform:uppercase;
   }
-  button.calc:hover{background:#63c2b8;}
+  button.calc:hover{background:#177b95;}
 
   .results-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:14px;}
   .result-card{
@@ -111,7 +110,7 @@
     padding:10px 20px; border-radius:6px; font-family:var(--mono); font-size:12px;
     letter-spacing:0.5px; cursor:pointer; font-weight:600;
   }
-  .mode-toggle button.active{background:var(--accent); color:#08110f; border-color:var(--accent);}
+  .mode-toggle button.active{background:var(--accent); color:#ffffff; border-color:var(--accent);}
 
   .flash-table{width:100%; border-collapse:collapse; margin-top:10px; font-family:var(--mono); font-size:12px;}
   .flash-table th{
@@ -124,8 +123,8 @@
   .flash-table .kcol{color:var(--accent2);}
 
   .beta-bar-wrap{margin:16px 0; background:var(--panel2); border-radius:5px; overflow:hidden; height:34px; position:relative; border:1px solid var(--border);}
-  .beta-bar-liquid{position:absolute; left:0; top:0; bottom:0; background:var(--liquid); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#08110f; font-weight:700;}
-  .beta-bar-vapor{position:absolute; right:0; top:0; bottom:0; background:var(--vapor); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#08110f; font-weight:700;}
+  .beta-bar-liquid{position:absolute; left:0; top:0; bottom:0; background:var(--liquid); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#ffffff; font-weight:700;}
+  .beta-bar-vapor{position:absolute; right:0; top:0; bottom:0; background:var(--vapor); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#ffffff; font-weight:700;}
 
   .export-toolbar{display:flex; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
   .export-toolbar button{
