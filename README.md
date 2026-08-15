@@ -254,6 +254,15 @@
     liquid composition &asymp; feed composition — it is <em>not</em> a substitute for a laboratory-measured
     flash point (ASTM D56/D93/D3278) and should not be used as the sole basis for fire-safety classification
     or regulatory compliance.
+    <footer class="no-print">
+      <h3>Developer Information</h3>
+      <p><strong>Gajanand Yadav</strong></p>
+      <p>Chemical Engineer, IIT Guwahati</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+      Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
+      <p>For Hydraulic calculation </p> 
+      <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
+      </footer>
   </div>
   </div><!-- /densityMode -->
 
@@ -354,6 +363,15 @@
       rather than from a naive continuous T-search (which would straddle the discontinuity incorrectly).
       For a <strong>mixture</strong>, the two-phase region spans a continuous range of T at fixed P, so
       direct bisection on T finds the two-phase solution directly.
+      <footer class="no-print">
+      <h3>Developer Information</h3>
+      <p><strong>Gajanand Yadav</strong></p>
+      <p>Chemical Engineer, IIT Guwahati</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+      Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
+      <p>For Hydraulic calculation </p> 
+      <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
+      </footer>
     </div>
   </div><!-- /jtMode -->
 
@@ -413,19 +431,19 @@
       mixture MW over dry-air MW (28.9647 g/mol); Wobbe Index = volumetric CV / &radic;(specific gravity).
       Oxygen, Nitrogen, and Water are treated as inert (zero heating value) — they dilute the mixture but
       don't consume heat in this convention.
+      <footer class="no-print">
+      <h3>Developer Information</h3>
+      <p><strong>Gajanand Yadav</strong></p>
+      <p>Chemical Engineer, IIT Guwahati</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+      Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
+      <p>For Hydraulic calculation </p> 
+      <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
+      </footer>
     </div>
   </div><!-- /cvMode -->
 </main>
 <script>
-<footer class="no-print">
-  <h3>Developer Information</h3>
-  <p><strong>Gajanand Yadav</strong></p>
-  <p>Chemical Engineer, IIT Guwahati</p>
-  <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
-     Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
-  <p>For Hydraulic calculation </p> 
-  <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
-</footer>
   // ============================================================
 // Peng-Robinson EOS engine (mirrors pr_core.py logic)
 // ============================================================
