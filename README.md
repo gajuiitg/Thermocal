@@ -167,7 +167,6 @@
 <body>
 
 <header>
-  <h1>PR-EOS <span>DENSITY, Cp, FLASH &amp; JT</span> CALCULATOR</h1>
   <div class="sub">Peng-Robinson (1978) &middot; C1/C2/C2=/C3/C3= &middot; Pure &amp; Mixture</div>
 </header>
 
