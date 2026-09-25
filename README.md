@@ -1,4 +1,3 @@
-
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-TND589HSEC"></script>
 <script>
@@ -11,7 +10,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=yes">
 <title>PR-EOS Density &amp; Cp Calculator | C1-C3 Light Hydrocarbons</title>
 <style>
   :root{
@@ -68,7 +67,7 @@
     flex:1; background:var(--panel2); border:none; color:var(--text-dim); padding:9px 0;
     font-family:var(--mono); font-size:12px; cursor:pointer; transition:.15s;
   }
-  .phase-toggle button.active{background:var(--accent); color:#ffffff; font-weight:600;}
+  .phase-toggle button.active{background:var(--accent); color:#08110f; font-weight:600;}
 
   .comp-table{width:100%; border-collapse:collapse; margin-top:6px;}
   .comp-table th{
@@ -77,18 +76,25 @@
   }
   .comp-table td{padding:3px 6px;}
   .comp-table input[type=number]{padding:5px 8px; font-size:12px;}
-  .comp-table td:first-child{font-family:var(--mono); font-size:12px; white-space:nowrap;}
+  .comp-table input[type=number]:disabled{opacity:0.3; cursor:not-allowed;}
+  .comp-table td.name-col{font-family:var(--mono); font-size:12px; white-space:normal;}
+  .comp-table td.chk-col{width:22px; text-align:center; padding:3px 2px;}
+  .comp-table input[type=checkbox]{width:14px; height:14px; cursor:pointer; accent-color:var(--accent);}
+  .comp-table td.group-hdr{
+    padding:9px 6px 3px; font-size:10px; color:var(--accent2); text-transform:uppercase;
+    letter-spacing:0.6px; font-weight:600; border-bottom:1px solid var(--border);
+  }
   .comp-sum{font-family:var(--mono); font-size:11px; color:var(--text-dim); margin-top:8px; text-align:right;}
   .comp-sum.err{color:#e06c5c;}
 
   button.calc{
-    width:100%; margin-top:16px; background:var(--accent); color:#ffffff; border:none;
+    width:100%; margin-top:16px; background:var(--accent); color:#08110f; border:none;
     border-radius:4px; padding:11px 0; font-family:var(--mono); font-size:13px; font-weight:700;
     letter-spacing:0.5px; cursor:pointer; text-transform:uppercase;
   }
-  button.calc:hover{background:#177b95;}
+  button.calc:hover{background:#63c2b8;}
 
-  .results-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:14px;}
+  .results-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
   .result-card{
     background:var(--panel2); border:1px solid var(--border); border-radius:5px; padding:14px 16px;
   }
@@ -120,7 +126,7 @@
     padding:10px 20px; border-radius:6px; font-family:var(--mono); font-size:12px;
     letter-spacing:0.5px; cursor:pointer; font-weight:600;
   }
-  .mode-toggle button.active{background:var(--accent); color:#ffffff; border-color:var(--accent);}
+  .mode-toggle button.active{background:var(--accent); color:#08110f; border-color:var(--accent);}
 
   .flash-table{width:100%; border-collapse:collapse; margin-top:10px; font-family:var(--mono); font-size:12px;}
   .flash-table th{
@@ -133,8 +139,8 @@
   .flash-table .kcol{color:var(--accent2);}
 
   .beta-bar-wrap{margin:16px 0; background:var(--panel2); border-radius:5px; overflow:hidden; height:34px; position:relative; border:1px solid var(--border);}
-  .beta-bar-liquid{position:absolute; left:0; top:0; bottom:0; background:var(--liquid); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#ffffff; font-weight:700;}
-  .beta-bar-vapor{position:absolute; right:0; top:0; bottom:0; background:var(--vapor); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#ffffff; font-weight:700;}
+  .beta-bar-liquid{position:absolute; left:0; top:0; bottom:0; background:var(--liquid); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#08110f; font-weight:700;}
+  .beta-bar-vapor{position:absolute; right:0; top:0; bottom:0; background:var(--vapor); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:11px; color:#08110f; font-weight:700;}
 
   .export-toolbar{display:flex; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
   .export-toolbar button{
@@ -167,6 +173,7 @@
 <body>
 
 <header>
+  <h1>PR-EOS <span>DENSITY, Cp, FLASH &amp; JT</span> CALCULATOR</h1>
   <div class="sub">Peng-Robinson (1978) &middot; C1/C2/C2=/C3/C3= &middot; Pure &amp; Mixture</div>
 </header>
 
@@ -177,6 +184,7 @@
     <button id="modeDensity" class="active" onclick="setMode('density')">DENSITY &amp; Cp</button>
     <button id="modeJT" onclick="setMode('jt')">ISENTHALPIC (JT)</button>
     <button id="modeCV" onclick="setMode('cv')">CALORIFIC VALUE</button>
+    <button id="modeMix" onclick="setMode('mix')">MIXING (2 STREAMS)</button>
   </div>
 
   <div id="densityMode">
@@ -230,10 +238,11 @@
           <button id="dBasisWt" onclick="setBasis('d','wt')">WT %</button>
         </div>
         <table class="comp-table" id="compTable">
-          <thead><tr><th>Component</th><th id="dCompColHdr">z<sub>i</sub></th></tr></thead>
+          <thead><tr><th></th><th>Component</th><th id="dCompColHdr">z<sub>i</sub></th></tr></thead>
           <tbody></tbody>
         </table>
         <div class="comp-sum" id="compSum">Sum: 1.0000</div>
+        <div class="footer-note" style="margin-top:6px;">Tick a component to include it in the mixture. Newly ticked components start at 0 &mdash; enter a value.</div>
       </div>
 
       <button class="calc" onclick="runCalc()">CALCULATE</button>
@@ -263,14 +272,22 @@
     liquid composition &asymp; feed composition — it is <em>not</em> a substitute for a laboratory-measured
     flash point (ASTM D56/D93/D3278) and should not be used as the sole basis for fire-safety classification
     or regulatory compliance.
-    <footer class="no-print">
+    <br><br>
+    <strong>Extended component set</strong> (1,3-butadiene, n-butane, C5H10/1-pentene, benzene, toluene,
+    n-hexane, methanol, VCM, EDC, HCl, chlorine, EO, EG): critical properties (T<sub>c</sub>, P<sub>c</sub>,
+    &omega;) are literature-typical values, and untabulated binary pairs default to k<sub>ij</sub>=0
+    (ideal mixing) &mdash; verify against DIPPR/NIST/a process simulator before design or safety use.
+    Saturation-temperature (Antoine) and Flash Point estimates are not yet available for these components
+    (density, Cp, and JT/enthalpy calculations are unaffected).
+     <footer class="no-print">
       <h3>Developer Information</h3>
       <p><strong>Gajanand Yadav</strong></p>
-      <p>Chemical Engineer, IIT Guwahati</p>
-      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+      <p>Chemical Engineer</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a>
+      <p><a href="https://www.linkedin.com/in/gajanand-yadav-512624a5/" target="_blank">LinkedIn</a></p>
       Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
-      <p>For Hydraulic calculation </p> 
-      <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
+      <p>For Back to Profile </p> 
+      <a href="https://gajuiitg.github.io/Profile/">Clickable here</a>
       </footer>
   </div>
   </div><!-- /densityMode -->
@@ -343,10 +360,11 @@
             <button id="jBasisWt" onclick="setBasis('j','wt')">WT %</button>
           </div>
           <table class="comp-table" id="jCompTable">
-            <thead><tr><th>Component</th><th id="jCompColHdr">z<sub>i</sub></th></tr></thead>
+            <thead><tr><th></th><th>Component</th><th id="jCompColHdr">z<sub>i</sub></th></tr></thead>
             <tbody></tbody>
           </table>
           <div class="comp-sum" id="jCompSum">Sum: 1.0000</div>
+          <div class="footer-note" style="margin-top:6px;">Tick a component to include it in the feed. Newly ticked components start at 0 &mdash; enter a value.</div>
         </div>
 
         <button class="calc" onclick="runJT()">CALCULATE T2</button>
@@ -372,14 +390,19 @@
       rather than from a naive continuous T-search (which would straddle the discontinuity incorrectly).
       For a <strong>mixture</strong>, the two-phase region spans a continuous range of T at fixed P, so
       direct bisection on T finds the two-phase solution directly.
-      <footer class="no-print">
+      <br><br>
+      For extended-set pure components without a loaded Antoine correlation, the saturation-temperature
+      clamp at T<sub>sat</sub>(P2) is skipped and the solver goes straight to bisection on T &mdash; this
+      is fine away from a phase change, but can be less precise exactly at one.
+       <footer class="no-print">
       <h3>Developer Information</h3>
       <p><strong>Gajanand Yadav</strong></p>
-      <p>Chemical Engineer, IIT Guwahati</p>
-      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+      <p>Chemical Engineer</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a>
+      <p><a href="https://www.linkedin.com/in/gajanand-yadav-512624a5/" target="_blank">LinkedIn</a></p>
       Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
-      <p>For Hydraulic calculation </p> 
-      <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
+      <p>For Back to Profile </p> 
+      <a href="https://gajuiitg.github.io/Profile/">Clickable here</a>
       </footer>
     </div>
   </div><!-- /jtMode -->
@@ -413,10 +436,11 @@
             <button id="cvBasisWt" onclick="setBasis('cv','wt')">WT %</button>
           </div>
           <table class="comp-table" id="cvCompTable">
-            <thead><tr><th>Component</th><th id="cvCompColHdr">z<sub>i</sub></th></tr></thead>
+            <thead><tr><th></th><th>Component</th><th id="cvCompColHdr">z<sub>i</sub></th></tr></thead>
             <tbody></tbody>
           </table>
           <div class="comp-sum" id="cvCompSum">Sum: 1.0000</div>
+          <div class="footer-note" style="margin-top:6px;">Tick a component to include it in the mixture. Newly ticked components start at 0 &mdash; enter a value.</div>
         </div>
 
         <button class="calc" onclick="runCV()">CALCULATE</button>
@@ -440,20 +464,231 @@
       mixture MW over dry-air MW (28.9647 g/mol); Wobbe Index = volumetric CV / &radic;(specific gravity).
       Oxygen, Nitrogen, and Water are treated as inert (zero heating value) — they dilute the mixture but
       don't consume heat in this convention.
-      <footer class="no-print">
+      <br><br>
+      Extended-set heats of combustion (butadiene, butane, C5H10, benzene, toluene, hexane, methanol, VCM,
+      EDC, EO, EG) are approximate literature values; HCl and Chlorine are treated as inert (zero heating
+      value) since they don't combust. Chlorinated species form HCl on combustion rather than only CO2/H2O,
+      so treat their listed values as indicative only &mdash; verify before fiscal/custody use.
+       <footer class="no-print">
       <h3>Developer Information</h3>
       <p><strong>Gajanand Yadav</strong></p>
-      <p>Chemical Engineer, IIT Guwahati</p>
-      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a> |
+      <p>Chemical Engineer</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a>
+      <p><a href="https://www.linkedin.com/in/gajanand-yadav-512624a5/" target="_blank">LinkedIn</a></p>
       Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
-      <p>For Hydraulic calculation </p> 
-      <a href="https://gajuiitg.github.io/Hydraulic/">Clickable here</a>
+      <p>For Back to Profile </p> 
+      <a href="https://gajuiitg.github.io/Profile/">Clickable here</a>
       </footer>
     </div>
   </div><!-- /cvMode -->
+
+  <div id="mixMode" style="display:none;">
+  <div class="grid">
+    <!-- LEFT: INPUTS -->
+    <div>
+      <div class="panel">
+        <h2>Stream 1 &mdash; Conditions</h2>
+        <div class="row2">
+          <div>
+            <label>Temperature</label>
+            <input type="number" id="mix1TempVal" value="40" step="any">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mix1TempUnit">
+              <option value="C" selected>&deg;C</option>
+              <option value="K">K</option>
+              <option value="F">&deg;F</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Pressure</label>
+            <input type="number" id="mix1PresVal" value="20" step="any">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mix1PresUnit">
+              <option value="atm">atm</option>
+              <option value="bar" selected>bar</option>
+              <option value="barg">barg</option>
+              <option value="kPa">kPa</option>
+              <option value="kgcm2g">kg/cm&sup2;g</option>
+              <option value="psi">psia</option>
+            </select>
+          </div>
+        </div>
+        <label>Phase (declared inlet state)</label>
+        <div class="phase-toggle">
+          <button id="mix1PhaseVapor" class="active" onclick="setStreamPhase(1,'vapor')">VAPOR</button>
+          <button id="mix1PhaseLiquid" onclick="setStreamPhase(1,'liquid')">LIQUID</button>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Flow rate</label>
+            <input type="number" id="mix1FlowVal" value="100" step="any" min="0">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mix1FlowUnit">
+              <option value="kmolh" selected>kmol/h</option>
+              <option value="kgh">kg/h</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Stream 1 &mdash; Composition</h2>
+        <div class="phase-toggle">
+          <button id="mix1BasisMol" class="active" onclick="setBasis('mix1','mol')">MOL %</button>
+          <button id="mix1BasisWt" onclick="setBasis('mix1','wt')">WT %</button>
+        </div>
+        <table class="comp-table" id="mix1CompTable">
+          <thead><tr><th></th><th>Component</th><th id="mix1CompColHdr">z<sub>i</sub></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="comp-sum" id="mix1CompSum">Sum: 1.0000</div>
+        <div class="footer-note" style="margin-top:6px;">Tick a component to include it in Stream 1.</div>
+      </div>
+
+      <div class="panel">
+        <h2>Stream 2 &mdash; Conditions</h2>
+        <div class="row2">
+          <div>
+            <label>Temperature</label>
+            <input type="number" id="mix2TempVal" value="25" step="any">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mix2TempUnit">
+              <option value="C" selected>&deg;C</option>
+              <option value="K">K</option>
+              <option value="F">&deg;F</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Pressure</label>
+            <input type="number" id="mix2PresVal" value="20" step="any">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mix2PresUnit">
+              <option value="atm">atm</option>
+              <option value="bar" selected>bar</option>
+              <option value="barg">barg</option>
+              <option value="kPa">kPa</option>
+              <option value="kgcm2g">kg/cm&sup2;g</option>
+              <option value="psi">psia</option>
+            </select>
+          </div>
+        </div>
+        <label>Phase (declared inlet state)</label>
+        <div class="phase-toggle">
+          <button id="mix2PhaseVapor" onclick="setStreamPhase(2,'vapor')">VAPOR</button>
+          <button id="mix2PhaseLiquid" class="active" onclick="setStreamPhase(2,'liquid')">LIQUID</button>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Flow rate</label>
+            <input type="number" id="mix2FlowVal" value="20" step="any" min="0">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mix2FlowUnit">
+              <option value="kmolh" selected>kmol/h</option>
+              <option value="kgh">kg/h</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Stream 2 &mdash; Composition</h2>
+        <div class="phase-toggle">
+          <button id="mix2BasisMol" class="active" onclick="setBasis('mix2','mol')">MOL %</button>
+          <button id="mix2BasisWt" onclick="setBasis('mix2','wt')">WT %</button>
+        </div>
+        <table class="comp-table" id="mix2CompTable">
+          <thead><tr><th></th><th>Component</th><th id="mix2CompColHdr">z<sub>i</sub></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="comp-sum" id="mix2CompSum">Sum: 1.0000</div>
+        <div class="footer-note" style="margin-top:6px;">Tick a component to include it in Stream 2.</div>
+      </div>
+
+      <div class="panel">
+        <h2>Mixed Outlet &mdash; Pressure</h2>
+        <div class="row2">
+          <div>
+            <label>Final (mixed) pressure</label>
+            <input type="number" id="mixPfVal" value="17.5" step="any">
+          </div>
+          <div>
+            <label>Unit</label>
+            <select id="mixPfUnit">
+              <option value="atm">atm</option>
+              <option value="bar">bar</option>
+              <option value="barg">barg</option>
+              <option value="kPa">kPa</option>
+              <option value="kgcm2g" selected>kg/cm&sup2;g</option>
+              <option value="psi">psia</option>
+            </select>
+          </div>
+        </div>
+        <div class="footer-note" style="margin-top:6px;">
+          Outlet temperature is solved from an adiabatic, steady-state energy balance
+          (F<sub>1</sub>H<sub>1</sub>+F<sub>2</sub>H<sub>2</sub>=F<sub>total</sub>H<sub>mix</sub>) at this pressure &mdash;
+          it is not an input.
+        </div>
+      </div>
+
+      <button class="calc" onclick="runMix()">CALCULATE MIX</button>
+      <div class="warn" id="mixWarnBox"></div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="panel" id="mixResultsPanel">
+        <h2>Results</h2>
+        <div class="placeholder">Enter both streams' conditions and composition, then click Calculate Mix.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <strong>Method:</strong> each inlet stream's molar enthalpy is evaluated at its own T, P, and
+    <em>declared</em> phase (ideal-gas Cp&deg; integral + PR-EOS departure, same convention as the
+    Density &amp; Cp tab). The two streams are combined on a molar basis into a single feed composition,
+    and the outlet temperature at the specified final pressure is found by solving the steady-state,
+    adiabatic energy balance F<sub>1</sub>H<sub>1</sub> + F<sub>2</sub>H<sub>2</sub> = F<sub>total</sub>&middot;H<sub>mix</sub>(T,P<sub>f</sub>).
+    No heat loss, no shaft work, and no pressure-drop-induced flashing beyond what the energy balance itself
+    predicts are assumed (a real tee/header may lose heat to ambient or have a different pressure profile).
+    <br><br>
+    The outlet phase (vapor / liquid / two-phase) is <em>not</em> assumed &mdash; it is determined
+    rigorously from a PT flash (Rachford-Rice + PR fugacity coefficients) on the combined composition
+    at the solved temperature and specified pressure, exactly as in the Isenthalpic (JT) tab. If the
+    result is two-phase, vapor and liquid density/Cp are reported separately in addition to the
+    flow-weighted apparent values.
+     <footer class="no-print">
+      <h3>Developer Information</h3>
+      <p><strong>Gajanand Yadav</strong></p>
+      <p>Chemical Engineer</p>
+      <p>Email: <a href="mailto:gajanandiitg@gmail.com">gajanandiitg@gmail.com</a>
+      <p><a href="https://www.linkedin.com/in/gajanand-yadav-512624a5/" target="_blank">LinkedIn</a></p>
+      Mobile: <a href="tel:+918369354472">+91-8369354472</a></p>
+      <p>For Back to Profile </p> 
+      <a href="https://gajuiitg.github.io/Profile/">Clickable here</a>
+      </footer>
+  </div>
+  </div><!-- /mixMode -->
 </main>
+
 <script>
-  // ============================================================
+// ============================================================
 // Peng-Robinson EOS engine (mirrors pr_core.py logic)
 // ============================================================
 const R = 8.314462618; // J/mol.K
@@ -467,7 +702,23 @@ const COMPONENTS = {
   Oxygen:    {Tc:154.581, Pc:5043000, omega:0.0222, MW:31.999},
   Nitrogen:  {Tc:126.192, Pc:3395800, omega:0.0372, MW:28.013},
   Hydrogen:  {Tc:33.145, Pc:1296400, omega:-0.2190, MW:2.016},
-  Water:     {Tc:647.096, Pc:22064000, omega:0.3443, MW:18.015}
+  Water:     {Tc:647.096, Pc:22064000, omega:0.3443, MW:18.015},
+  "Carbon Dioxide (CO2)":      {Tc:304.13, Pc:7377000, omega:0.2239, MW:44.010},
+  // --- Extended set (literature-typical critical properties; verify against
+  // DIPPR/NIST/simulator databank before safety-critical or custody use) ---
+  "1,3-Butadiene":              {Tc:425.0,  Pc:4330000, omega:0.195, MW:54.092},
+  "n-Butane":                   {Tc:425.12, Pc:3796000, omega:0.200, MW:58.122},
+  "C5H10 (1-Pentene)":          {Tc:464.7,  Pc:3529000, omega:0.245, MW:70.135},
+  "Benzene":                    {Tc:562.05, Pc:4895000, omega:0.212, MW:78.114},
+  "Toluene":                    {Tc:591.75, Pc:4108000, omega:0.264, MW:92.141},
+  "Vinyl Chloride (VCM)":       {Tc:432.0,  Pc:5600000, omega:0.122, MW:62.499},
+  "1,2-Dichloroethane (EDC)":   {Tc:561.6,  Pc:5400000, omega:0.269, MW:98.959},
+  "Hydrogen Chloride (HCl)":    {Tc:324.65, Pc:8310000, omega:0.132, MW:36.461},
+  "Chlorine":                   {Tc:417.15, Pc:7710000, omega:0.069, MW:70.906},
+  "Ethylene Oxide (EO)":        {Tc:469.15, Pc:7190000, omega:0.202, MW:44.053},
+  "Ethylene Glycol (EG)":       {Tc:719.7,  Pc:7700000, omega:0.500, MW:62.068},
+  "n-Hexane":                   {Tc:507.6,  Pc:3025000, omega:0.301, MW:86.178},
+  "Methanol":                   {Tc:512.6,  Pc:8084000, omega:0.565, MW:32.042}
 };
 
 const CP0 = {
@@ -479,11 +730,36 @@ const CP0 = {
   Oxygen:    {A:29.6213, B:-8.120003e-03, C:3.058886e-05,  D:-1.737182e-08},
   Nitrogen:  {A:30.0153, B:-7.765822e-03, C:1.744816e-05,  D:-6.961427e-09},
   Hydrogen:  {A:18.3001, B:6.847923e-02,  C:-1.393455e-04, D:9.250750e-08},
-  Water:     {A:33.6739, B:-6.446044e-03, C:2.402575e-05,  D:-1.004486e-08}
+  Water:     {A:33.6739, B:-6.446044e-03, C:2.402575e-05,  D:-1.004486e-08},
+  "Carbon Dioxide (CO2)": {A:19.795, B:7.343e-02, C:-5.602e-05, D:1.715e-08},
+  // --- Extended set: simple 2-parameter (linear) fits to literature ideal-gas
+  // Cp at ~298K/600K (C=D=0). Adequate for typical process-range estimates;
+  // verify against DIPPR/NIST for precision work outside ~250-600 K. ---
+  "1,3-Butadiene":            {A:12.9, B:0.2235, C:0, D:0},
+  "n-Butane":                 {A:26.0, B:0.2400, C:0, D:0},
+  "C5H10 (1-Pentene)":        {A:36.1, B:0.2815, C:0, D:0},
+  "Benzene":                  {A:3.8,  B:0.2636, C:0, D:0},
+  "Toluene":                  {A:15.4, B:0.2960, C:0, D:0},
+  "Vinyl Chloride (VCM)":     {A:30.3, B:0.0762, C:0, D:0},
+  "1,2-Dichloroethane (EDC)": {A:48.4, B:0.0993, C:0, D:0},
+  "Hydrogen Chloride (HCl)":  {A:28.6, B:0.00166,C:0, D:0},
+  "Chlorine":                 {A:31.2, B:0.00894,C:0, D:0},
+  "Ethylene Oxide (EO)":      {A:11.5, B:0.1225, C:0, D:0},
+  "Ethylene Glycol (EG)":     {A:31.0, B:0.2483, C:0, D:0},
+  "n-Hexane":                 {A:35.3, B:0.3645, C:0, D:0},
+  "Methanol":                 {A:12.6, B:0.1056, C:0, D:0}
 };
 
-const ORDER = ["Methane","Ethane","Ethylene","Propane","Propylene",
-               "Oxygen","Nitrogen","Hydrogen","Water"];
+const COMP_GROUPS = [
+  {label:"Light Gases (C1\u2013C3)", items:["Methane","Ethane","Ethylene","Propane","Propylene"]},
+  {label:"Inerts / Utility Gases",   items:["Oxygen","Nitrogen","Hydrogen","Water","Carbon Dioxide (CO2)"]},
+  {label:"C4\u2013C6 Hydrocarbons",  items:["1,3-Butadiene","n-Butane","C5H10 (1-Pentene)","n-Hexane"]},
+  {label:"Aromatics",                items:["Benzene","Toluene"]},
+  {label:"Oxygenates",               items:["Methanol","Ethylene Oxide (EO)","Ethylene Glycol (EG)"]},
+  {label:"Chlorinated / Acid Gas",   items:["Vinyl Chloride (VCM)","1,2-Dichloroethane (EDC)","Hydrogen Chloride (HCl)","Chlorine"]}
+];
+const ORDER = COMP_GROUPS.flatMap(g=>g.items);
+const ORIGINAL_NINE = ["Methane","Ethane","Ethylene","Propane","Propylene","Oxygen","Nitrogen","Hydrogen","Water"];
 
 const KIJ = {
   "Methane|Ethane": -0.0026, "Methane|Ethylene": 0.0100, "Methane|Propane": 0.0140,
@@ -587,178 +863,6 @@ function densityAndZ(comps, z, T, P, phase){
   return {Z, V, rho, MW, roots, am, bm};
 }
 
-// ============================================================
-// Viscosity via Jossi-Stiel-Thodos (JST) residual correlation, using
-// reduced density from the PR-EOS density calculation above.
-// ============================================================
-const VC = {
-  Methane:98.6, Ethane:145.5, Ethylene:131.0, Propane:200.0, Propylene:181.0,
-  Oxygen:73.4, Nitrogen:89.8, Hydrogen:64.3, Water:55.9
-}; // critical volume, cm3/mol
-
-function xiParam(Tc, PcAtm, MW){
-  return Math.pow(Tc, 1/6) / (Math.sqrt(MW) * Math.pow(PcAtm, 2/3));
-}
-function muDilute(Tr){
-  // Stiel-Thodos low-pressure (dilute gas) viscosity * xi
-  if(Tr <= 1.5) return 34e-5 * Math.pow(Tr, 0.94);
-  return 17.78e-5 * Math.pow(4.58*Tr - 1.67, 0.625);
-}
-function jstResidual(rhoR){
-  // [(mu-mu0)*xi + 1e-4]^(1/4) = poly(rho_r) (Jossi, Stiel & Thodos, 1962)
-  return 0.1023 + 0.023364*rhoR + 0.058533*rhoR**2 - 0.040758*rhoR**3 + 0.0093324*rhoR**4;
-}
-
-function viscosity(comps, zIn, T, P, phase){
-  // Returns viscosity [cP] via pseudo-critical (Kay's rule) mixing + JST
-  // residual correlation. Approximate method: typically within 5-10% for
-  // nonpolar hydrocarbons/gases (validated against literature for methane,
-  // propane, nitrogen, and liquid propane); less accurate for water (polar)
-  // and hydrogen (quantum effects) - treat those as indicative only.
-  const sum = zIn.reduce((a,b)=>a+b,0);
-  const z = zIn.map(v=>v/sum);
-  const n = comps.length;
-  let TcMix=0, PcMixPa=0, MWmix=0, VcMix=0;
-  for(let i=0;i<n;i++){
-    TcMix += z[i]*COMPONENTS[comps[i]].Tc;
-    PcMixPa += z[i]*COMPONENTS[comps[i]].Pc;
-    MWmix += z[i]*COMPONENTS[comps[i]].MW;
-    VcMix += z[i]*VC[comps[i]];
-  }
-  const PcMixAtm = PcMixPa/101325;
-  const Tr = T/TcMix;
-  const xi = xiParam(TcMix, PcMixAtm, MWmix);
-  const mu0xi = muDilute(Tr);
-  const mu0 = mu0xi/xi; // cP
-
-  const dz = densityAndZ(comps, z, T, P, phase);
-  const VmCm3 = dz.V * 1e6; // m3/mol -> cm3/mol
-  const rhoR = VcMix / VmCm3; // = rho/rho_c
-
-  const poly = jstResidual(rhoR);
-  const resid = (Math.pow(poly,4) - 1e-4) / xi;
-  let mu = mu0 + resid;
-  if(mu < 0) mu = mu0;
-
-  return {mu_cP: mu, mu0_cP: mu0, Tr, rho_r: rhoR, xi, Tc_mix: TcMix, Vc_mix: VcMix};
-}
-
-// ============================================================
-// Water/steam properties via correlations fitted against IAPWS-IF97
-// (the industry-standard steam table formulation), used in place of PR EOS
-// for PURE water only - replacing a known PR-EOS accuracy limitation for
-// polar/associating fluids. Mixtures containing water still use PR EOS with
-// the existing water-hydrocarbon kij, since rigorous multi-fluid steam+HC
-// mixing is beyond this tool's scope.
-// Liquid correlations are T-only (pressure effect on liquid water density/
-// Cp/viscosity confirmed <1% across 5-100 bar during development). Steam
-// (vapor) correlations are T,P-dependent with a saturation-proximity term.
-// Validated: liquid density/Cp within 0.05% of IAPWS-IF97, steam within ~2%.
-// ============================================================
-const ANTOINE_WATER_STEAM = [
-  [275.00, 370.00, 5.20793, 1737.6641, -39.0485],
-  [370.00, 470.00, 5.05134, 1642.7191, -47.5493],
-  [470.00, 570.00, 5.29346, 1858.3410, -20.0729],
-  [570.00, 646.40, 6.60398, 3600.2886, 197.8151],
-];
-
-function psatWaterSteam(T){
-  for(const [Tlo, Thi, A, B, C] of ANTOINE_WATER_STEAM){
-    if(T >= Tlo-2 && T <= Thi+2){
-      return Math.pow(10, A - B/(T+C)) * 1e5; // Pa
-    }
-  }
-  return null;
-}
-
-function rhoLiquidWater(T){
-  let a,b,c,d,e;
-  if(T <= 473.15){
-    [a,b,c,d,e] = [-54.93909845989531, 10.753405268868235, -0.03920856689725001, 6.165330528126877e-05, -3.8337904073312136e-08];
-  } else {
-    [a,b,c,d,e] = [-14414.596776849203, 120.68991947915288, -0.3536376250463465, 0.00045947106386909565, -2.2597514091585312e-07];
-  }
-  return a + b*T + c*T**2 + d*T**3 + e*T**4;
-}
-function cpLiquidWater(T){
-  let a,b,c,d,e;
-  if(T <= 473.15){
-    [a,b,c,d,e] = [12.2219812403671, -0.08392801772684173, 0.0003292550198893293, -5.819713736725633e-07, 3.9741972165180953e-10];
-  } else {
-    [a,b,c,d,e] = [2015.778316695339, -15.458910930706972, 0.044528462543439846, -5.699920694648377e-05, 2.7377721277737262e-08];
-  }
-  return a + b*T + c*T**2 + d*T**3 + e*T**4; // kJ/kg.K
-}
-function muLiquidWater(T){
-  let a,b,c,d,e;
-  if(T <= 473.15){
-    [a,b,c,d,e] = [48.378689020346194, -0.43481485260807723, 0.0014805924183196944, -2.315437466028779e-06, 1.379842386632751e-09];
-  } else {
-    [a,b,c,d,e] = [-16.882444102252943, 0.1464587568826484, -0.0004885005186970727, 6.870203737580947e-07, -3.5579395970776343e-10];
-  }
-  const logmu = a + b*T + c*T**2 + d*T**3 + e*T**4;
-  return Math.exp(logmu); // cP
-}
-
-function zSteam(T, P){
-  const Psat = psatWaterSteam(T);
-  const PrSat = Psat ? P/Psat : 0;
-  const b0=0.0002669762286022775, b1=-0.20493222574988285, b2=-11.49362854981797;
-  const m1=0.008123293077076597;
-  const B = b0 + b1/T + b2/(T*T);
-  const virial = 1 + B*P/(R*T);
-  return virial - m1*Math.pow(PrSat,4);
-}
-function rhoSteam(T, P){
-  const Z = zSteam(T, P);
-  const Vm = Z*R*T/P; // m3/mol
-  return (18.015/1000)/Vm;
-}
-function cpSteam(T, P){
-  const Psat = psatWaterSteam(T);
-  const Pbar = P/1e5;
-  const PrSat = Psat ? P/Psat : 0;
-  const a=2.8164819761367723, b=-0.0037281565411761267, c=3.959501869362751e-06;
-  const k1=0.12606821189030087, k2=-0.0001879108580207427;
-  const m1=-1.9680340625624229, m2=0.005293452507960543;
-  const Cp0 = a + b*T + c*T*T;
-  const corr = (k1+k2*T)*Pbar;
-  const nearSat = (m1+m2*T)*Math.pow(PrSat,4);
-  return Cp0 + corr + nearSat; // kJ/kg.K
-}
-function muSteam(T, P){
-  const Psat = psatWaterSteam(T);
-  const Pbar = P/1e5;
-  const PrSat = Psat ? P/Psat : 0;
-  const a=-0.0016587970302734227, b=3.534549821570272e-05, c=5.21764832589145e-09;
-  const k1=-0.00010923730248592911, k2=1.6956135817844329e-07;
-  const m1=-9.454871276903553e-05;
-  const mu0 = a + b*T + c*T*T;
-  const corr = (k1+k2*T)*Pbar;
-  const nearSat = m1*Math.pow(PrSat,4);
-  return mu0 + corr + nearSat; // cP
-}
-
-function waterSteamProperties(T, P, phase){
-  // Returns {rho, cpMassKJ, cpMolar, mu_cP, V, Z} for PURE water via steam-table
-  // correlations. cpMolar in J/mol.K for consistency with the rest of the tool.
-  const MW_WATER = 18.015;
-  let rho, cpMass, mu;
-  if(phase === "liquid"){
-    rho = rhoLiquidWater(T);
-    cpMass = cpLiquidWater(T);
-    mu = muLiquidWater(T);
-  } else {
-    rho = rhoSteam(T, P);
-    cpMass = cpSteam(T, P);
-    mu = muSteam(T, P);
-  }
-  const cpMolar = cpMass * MW_WATER; // kJ/kg.K * g/mol = J/mol.K numerically
-  const V = (MW_WATER/1000)/rho; // m3/mol
-  const Z = P*V/(R*T);
-  return {rho, cpMassKJ: cpMass, cpMolar, mu_cP: mu, V, Z, MW: MW_WATER};
-}
-
 function cpIdealMix(comps, z, T){
   let cp0 = 0;
   for(let i=0;i<comps.length;i++){
@@ -788,14 +892,24 @@ function cpDeparture(comps, z, T, P, phase){
 
   const CpRes = CvRes - R + (T*dPdT_V*dPdT_V)/(-dPdV_T);
   const Cp0 = cpIdealMix(comps, z, T);
-  return {Cp_ideal: Cp0, Cp_departure: CpRes, Cp_real: Cp0+CpRes, res};
+  const Cp_real = Cp0 + CpRes;
+  const Cv_real = (Cp0 - R) + CvRes; // Cv0 = Cp0 - R for an ideal gas, plus the real-gas Cv departure
+  const k = Cp_real / Cv_real; // heat capacity ratio, k = Cp/Cv
+  return {Cp_ideal: Cp0, Cp_departure: CpRes, Cp_real, Cv_real, k, res};
 }
 
 // ============================================================
 // UI wiring
 // ============================================================
 let currentPhase = "vapor";
-const basisState = {d: "mol", j: "mol", cv: "mol"};
+const basisState = {d: "mol", j: "mol", cv: "mol", mix1: "mol", mix2: "mol"};
+const mixPhaseState = {1: "vapor", 2: "liquid"};
+
+function setStreamPhase(n, p){
+  mixPhaseState[n] = p;
+  document.getElementById("mix"+n+"PhaseVapor").classList.toggle("active", p==="vapor");
+  document.getElementById("mix"+n+"PhaseLiquid").classList.toggle("active", p==="liquid");
+}
 
 function setBasis(tab, basis){
   basisState[tab] = basis;
@@ -814,27 +928,71 @@ function wtToMol(comps, wtFractions){
   return raw.map(v=>v/sum);
 }
 
-function buildCompTable(){
-  const tbody = document.querySelector("#compTable tbody");
+// ============================================================
+// Shared toggle-aware composition table builder (density/JT/CV tabs)
+// ============================================================
+function buildToggleCompTable(tableId, defaults, sumFnName){
+  const tbody = document.querySelector("#"+tableId+" tbody");
   tbody.innerHTML = "";
-  const defaults = {Methane:0.20, Ethane:0.20, Ethylene:0.20, Propane:0.20, Propylene:0.20,
-                     Oxygen:0, Nitrogen:0, Hydrogen:0, Water:0};
-  ORDER.forEach(name=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td><input type="number" step="0.0001" min="0" max="1" value="${defaults[name]}" data-comp="${name}" oninput="updateSum()"></td>`;
-    tbody.appendChild(tr);
+  COMP_GROUPS.forEach(g=>{
+    const trh = document.createElement("tr");
+    trh.innerHTML = `<td class="group-hdr" colspan="3">${g.label}</td>`;
+    tbody.appendChild(trh);
+    g.items.forEach(name=>{
+      const checked = ORIGINAL_NINE.includes(name);
+      const val = defaults[name] !== undefined ? defaults[name] : 0;
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        `<td class="chk-col"><input type="checkbox" class="comp-check" data-comp="${name}" ${checked?'checked':''} onchange="onCompToggle(this,'${sumFnName}')"></td>` +
+        `<td class="name-col">${name}</td>` +
+        `<td><input type="number" step="0.0001" min="0" max="1" value="${val}" data-comp="${name}" oninput="${sumFnName}()" ${checked?'':'disabled'}></td>`;
+      tbody.appendChild(tr);
+    });
   });
-  updateSum();
+  window[sumFnName]();
 }
 
-function updateSum(){
-  const inputs = document.querySelectorAll("#compTable input");
+function onCompToggle(cb, sumFnName){
+  const tr = cb.closest("tr");
+  const numInput = tr.querySelector("input[type=number]");
+  numInput.disabled = !cb.checked;
+  window[sumFnName]();
+}
+
+function sumToggleTable(tableId, sumElId){
   let sum = 0;
-  inputs.forEach(inp => sum += parseFloat(inp.value)||0);
-  const el = document.getElementById("compSum");
+  document.querySelectorAll("#"+tableId+" tbody tr").forEach(tr=>{
+    const cb = tr.querySelector("input[type=checkbox]");
+    if(!cb || !cb.checked) return;
+    sum += parseFloat(tr.querySelector("input[type=number]").value)||0;
+  });
+  const el = document.getElementById(sumElId);
   el.textContent = "Sum: " + sum.toFixed(4);
   el.className = "comp-sum" + (Math.abs(sum-1)>0.0005 ? " err" : "");
   return sum;
+}
+
+function collectActiveComps(tableId){
+  const comps = [], z = [];
+  let sum = 0;
+  document.querySelectorAll("#"+tableId+" tbody tr").forEach(tr=>{
+    const cb = tr.querySelector("input[type=checkbox]");
+    if(!cb || !cb.checked) return;
+    const inp = tr.querySelector("input[type=number]");
+    const v = parseFloat(inp.value)||0;
+    sum += v;
+    if(v > 0){ comps.push(inp.dataset.comp); z.push(v); }
+  });
+  return {comps, z, sum};
+}
+
+function buildCompTable(){
+  const defaults = {Methane:0.20, Ethane:0.20, Ethylene:0.20, Propane:0.20, Propylene:0.20};
+  buildToggleCompTable("compTable", defaults, "updateSum");
+}
+
+function updateSum(){
+  return sumToggleTable("compTable", "compSum");
 }
 
 function setPhase(p){
@@ -870,15 +1028,8 @@ function runCalc(){
 
     if(T <= 0 || P <= 0) throw new Error("Temperature and pressure must be positive (absolute).");
 
-    const inputs = document.querySelectorAll("#compTable input");
-    let comps = [], z = [];
-    let sum = 0;
-    inputs.forEach(inp=>{
-      const v = parseFloat(inp.value)||0;
-      sum += v;
-      if(v > 0){ comps.push(inp.dataset.comp); z.push(v); }
-    });
-    if(comps.length===0) throw new Error("Enter at least one non-zero mole fraction.");
+    let {comps, z, sum} = collectActiveComps("compTable");
+    if(comps.length===0) throw new Error("Tick at least one component and enter a non-zero mole fraction.");
     if(Math.abs(sum-1) > 0.0005){
       // normalize but warn
       z = z.map(v=>v/sum);
@@ -891,20 +1042,8 @@ function runCalc(){
       warnBox.classList.add("show");
     }
 
-    const isPureWater = (comps.length === 1 && comps[0] === "Water");
-    let dz, cp, visc;
-    if(isPureWater){
-      const wp = waterSteamProperties(T, P, currentPhase);
-      dz = {Z: wp.Z, V: wp.V, rho: wp.rho, MW: wp.MW, roots: [wp.Z]};
-      cp = {Cp_ideal: null, Cp_departure: null, Cp_real: wp.cpMolar};
-      visc = {mu_cP: wp.mu_cP, mu0_cP: null, rho_r: null};
-      warnBox.textContent += (warnBox.textContent? " " : "") + "Pure water: using steam-table correlations (fitted against IAPWS-IF97) in place of Peng-Robinson for density, Cp, and viscosity.";
-      warnBox.classList.add("show");
-    } else {
-      dz = densityAndZ(comps, z, T, P, currentPhase);
-      cp = cpDeparture(comps, z, T, P, currentPhase);
-      visc = viscosity(comps, z, T, P, currentPhase);
-    }
+    const dz = densityAndZ(comps, z, T, P, currentPhase);
+    const cp = cpDeparture(comps, z, T, P, currentPhase);
 
     // Saturation temperature at input P (pure component only, via Antoine equation)
     let tsatInfo = null;
@@ -932,7 +1071,7 @@ function runCalc(){
       warnBox.classList.add("show");
     }
 
-    renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo, visc, isPureWater);
+    renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo);
   } catch(e){
     warnBox.textContent = "Error: " + e.message;
     warnBox.classList.add("show");
@@ -940,7 +1079,7 @@ function runCalc(){
   }
 }
 
-function renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo, visc, isPureWater){
+function renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo){
   const phaseLabel = currentPhase === "vapor" ? "Vapor" : "Liquid";
   const phaseClass = currentPhase;
   const compList = comps.map((c,i)=> `${c} (${(z[i]*100).toFixed(2)}%)`).join(", ");
@@ -949,7 +1088,7 @@ function renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo, vis
   if(tsatInfo === null){
     tsatRow = "";
   } else if(tsatInfo === "range"){
-    tsatRow = `<tr><td>Saturation temperature at input P</td><td>N/A (outside Antoine correlation range for this component)</td></tr>`;
+    tsatRow = `<tr><td>Saturation temperature at input P</td><td>N/A (outside Antoine correlation range, or no vapor-pressure correlation loaded yet for this component)</td></tr>`;
   } else {
     tsatRow = `<tr><td>Saturation temperature at input P (Antoine)</td><td>${(tsatInfo-273.15).toFixed(3)} &deg;C (${tsatInfo.toFixed(3)} K)</td></tr>`;
   }
@@ -970,29 +1109,6 @@ function renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo, vis
     fpRow = `<tr><td>Flash Point (estimated, 1 atm)</td><td>N/A &mdash; ${fpInfo.status}</td></tr>`;
   }
 
-  const cpMassJ = cp.Cp_real/(dz.MW/1000);       // J/kg.K
-  const cpMassKcal = cpMassJ / 4184;              // kcal/kg.K
-
-  let cpBreakdownRows;
-  if(isPureWater){
-    cpBreakdownRows = `<tr><td>Real-gas Cp (mass basis)</td><td>${cpMassKcal.toFixed(5)} kcal/kg&middot;K</td></tr>`;
-  } else {
-    const cpIdealKcal = (cp.Cp_ideal/(dz.MW/1000)) / 4184;
-    const cpDepKcal = (cp.Cp_departure/(dz.MW/1000)) / 4184;
-    cpBreakdownRows = `
-      <tr><td>Ideal-gas Cp&deg; (mass basis)</td><td>${cpIdealKcal.toFixed(5)} kcal/kg&middot;K</td></tr>
-      <tr><td>Cp departure (real &minus; ideal, mass basis)</td><td>${cpDepKcal.toFixed(5)} kcal/kg&middot;K</td></tr>
-      <tr><td>Real-gas Cp (mass basis)</td><td>${cpMassKcal.toFixed(5)} kcal/kg&middot;K</td></tr>`;
-  }
-
-  const viscExtraRows = isPureWater ? "" : `
-      <tr><td>Dilute-gas (zero-density) viscosity</td><td>${visc.mu0_cP.toFixed(5)} cP</td></tr>
-      <tr><td>Reduced density (&rho;/&rho;<sub>c</sub>) used for viscosity</td><td>${visc.rho_r.toFixed(4)}</td></tr>`;
-
-  const methodRow = isPureWater
-    ? `<tr><td>Property method</td><td>Steam tables (fitted vs IAPWS-IF97) &mdash; not PR EOS</td></tr>`
-    : `<tr><td>Property method</td><td>Peng-Robinson EOS</td></tr>`;
-
   const html = `
     <h2>Results &mdash; ${phaseLabel} Phase</h2>
     <div class="results-grid">
@@ -1002,34 +1118,35 @@ function renderResults(dz, cp, comps, z, T, P, tsatInfo, ibpFbpInfo, fpInfo, vis
       </div>
       <div class="result-card ${phaseClass}">
         <div class="label">Real-Gas Cp</div>
-        <div class="value">${cpMassKcal.toFixed(4)}<span class="unit">kcal/kg&middot;K</span></div>
+        <div class="value">${cp.Cp_real.toFixed(3)}<span class="unit">J/mol&middot;K</span></div>
       </div>
       <div class="result-card ${phaseClass}">
-        <div class="label">Viscosity</div>
-        <div class="value">${visc.mu_cP.toFixed(5)}<span class="unit">cP</span></div>
+        <div class="label">k = Cp/Cv</div>
+        <div class="value">${cp.k.toFixed(4)}</div>
       </div>
     </div>
     <table class="detail-table">
-      ${methodRow}
       <tr><td>Compressibility factor, Z</td><td>${dz.Z.toFixed(6)}</td></tr>
       <tr><td>Molar volume</td><td>${(dz.V*1000).toFixed(4)} L/mol</td></tr>
       <tr><td>Mixture molecular weight</td><td>${dz.MW.toFixed(3)} g/mol</td></tr>
       <tr><td>Density (mass basis)</td><td>${dz.rho.toFixed(4)} kg/m&sup3;</td></tr>
       <tr><td>Density (molar basis)</td><td>${(1/dz.V).toFixed(3)} mol/m&sup3; &times; 10&sup3;... (${(1/dz.V/1000).toFixed(4)} kmol/m&sup3;)</td></tr>
-      ${cpBreakdownRows}
-      <tr><td>Real-gas Cp (molar basis)</td><td>${cp.Cp_real.toFixed(4)} J/mol&middot;K</td></tr>
-      <tr><td>Real-gas Cp (mass basis, SI)</td><td>${cpMassJ.toFixed(3)} J/kg&middot;K</td></tr>
-      <tr><td>Viscosity</td><td>${visc.mu_cP.toFixed(5)} cP</td></tr>
-      ${viscExtraRows}
+      <tr><td>Ideal-gas Cp&deg;</td><td>${cp.Cp_ideal.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Cp departure (real &minus; ideal)</td><td>${cp.Cp_departure.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Real-gas Cp</td><td>${cp.Cp_real.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Specific Cp (mass basis)</td><td>${(cp.Cp_real/(dz.MW/1000)).toFixed(3)} J/kg&middot;K</td></tr>
+      <tr><td>Real-gas Cv</td><td>${cp.Cv_real.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Specific Cv (mass basis)</td><td>${(cp.Cv_real/(dz.MW/1000)).toFixed(3)} J/kg&middot;K</td></tr>
+      <tr><td>Heat capacity ratio, k = Cp/Cv</td><td>${cp.k.toFixed(4)}</td></tr>
       ${tsatRow}
       ${ibpFbpRows}
       ${fpRow}
       <tr><td>Temperature</td><td>${T.toFixed(2)} K (${(T-273.15).toFixed(2)} &deg;C)</td></tr>
       <tr><td>Pressure</td><td>${(P/100000).toFixed(4)} bar (${(P/101325).toFixed(4)} atm)</td></tr>
       <tr><td>Composition (mole basis)</td><td style="text-align:left; max-width:260px;">${compList}</td></tr>
-      ${isPureWater ? "" : `<tr><td>Real roots of cubic (Z)</td><td>${dz.roots.map(r=>r.toFixed(5)).join(" / ")}</td></tr>`}
+      <tr><td>Real roots of cubic (Z)</td><td>${dz.roots.map(r=>r.toFixed(5)).join(" / ")}</td></tr>
     </table>
-    ${exportToolbarHTML('resultsPanel','Density_Cp_Results','d')}
+    ${exportToolbarHTML('resultsPanel','Density_Cp_Results')}
   `;
   document.getElementById("resultsPanel").innerHTML = html;
 }
@@ -1150,70 +1267,17 @@ function ptFlash(comps, zIn, T, P, maxIter=200, tol=1e-10){
 // ============================================================
 // Print PDF / Save Results export utilities
 // ============================================================
-function gatherInputsSummary(mode){
-  // Reads the current input fields for the given mode ('d','j','cv') and
-  // returns {lines: [...], html: "..."} for use in both print and text-save.
-  const lines = [];
-  const basisLabel = basisState[mode] === "wt" ? "Wt%" : "Mol%";
-
-  function compLines(tableId){
-    const out = [];
-    document.querySelectorAll(`#${tableId} input`).forEach(inp=>{
-      const v = parseFloat(inp.value)||0;
-      if(v > 0) out.push(`  ${inp.dataset.comp}: ${v} ${basisLabel==="Wt%" ? "wt%" : "mol%"}`);
-    });
-    return out;
-  }
-
-  if(mode === "d"){
-    lines.push("INPUT CONDITIONS");
-    lines.push(`  Temperature: ${document.getElementById("tempVal").value} ${document.getElementById("tempUnit").value}`);
-    lines.push(`  Pressure: ${document.getElementById("presVal").value} ${document.getElementById("presUnit").value}`);
-    lines.push(`  Phase: ${currentPhase === "vapor" ? "Vapor" : "Liquid"}`);
-    lines.push(`  Composition basis: ${basisLabel}`);
-    lines.push("INPUT COMPOSITION");
-    lines.push(...compLines("compTable"));
-  } else if(mode === "j"){
-    lines.push("INPUT CONDITIONS");
-    lines.push(`  Inlet Temperature T1: ${document.getElementById("jT1Val").value} ${document.getElementById("jT1Unit").value}`);
-    lines.push(`  Inlet Pressure P1: ${document.getElementById("jP1Val").value} ${document.getElementById("jP1Unit").value}`);
-    lines.push(`  Outlet Pressure P2: ${document.getElementById("jP2Val").value} ${document.getElementById("jP2Unit").value}`);
-    lines.push(`  Composition basis: ${basisLabel}`);
-    lines.push("INPUT FEED COMPOSITION");
-    lines.push(...compLines("jCompTable"));
-  } else if(mode === "cv"){
-    const trefSel = document.getElementById("cvTref");
-    const trefLabel = trefSel.options[trefSel.selectedIndex].text;
-    lines.push("INPUT CONDITIONS");
-    lines.push(`  Reference temperature (volumetric basis): ${trefLabel}`);
-    lines.push(`  Composition basis: ${basisLabel}`);
-    lines.push("INPUT COMPOSITION");
-    lines.push(...compLines("cvCompTable"));
-  }
-
-  const html = lines.map(l => {
-    if(l === "INPUT CONDITIONS" || l === "INPUT COMPOSITION" || l === "INPUT FEED COMPOSITION"){
-      return `<div style="font-weight:700; margin-top:10px;">${l}</div>`;
-    }
-    return `<div style="padding-left:8px;">${l.trim()}</div>`;
-  }).join("");
-
-  return {lines, html};
-}
-
-function printResults(panelId, titleText, mode){
-  // Populate the hidden #printMeta block with a title, timestamp, and the
-  // current input values, then trigger the browser's print dialog. Print CSS
-  // hides everything except #printMeta and the currently visible results
-  // panel, so "Save as PDF" in the print dialog gives a clean, self-contained PDF.
+function printResults(panelId, titleText){
+  // Populate the hidden #printMeta block with a title + timestamp, then trigger
+  // the browser's print dialog. Print CSS hides everything except the currently
+  // visible results panel, so "Save as PDF" in the print dialog gives a clean PDF.
   const meta = document.getElementById("printMeta");
   const now = new Date();
-  const inputs = gatherInputsSummary(mode);
-  meta.innerHTML = `<strong style="font-size:14px;">${titleText}</strong><br>Generated ${now.toLocaleString()} &middot; Peng-Robinson EOS Calculator${inputs.html}<div style="font-weight:700; margin-top:10px;">RESULTS</div>`;
+  meta.innerHTML = `<strong>${titleText}</strong><br>Generated ${now.toLocaleString()} &middot; Peng-Robinson EOS Calculator`;
   window.print();
 }
 
-function saveResultsAsText(panelId, titleText, mode){
+function saveResultsAsText(panelId, titleText){
   const panel = document.getElementById(panelId);
   if(!panel) return;
   const now = new Date();
@@ -1223,20 +1287,13 @@ function saveResultsAsText(panelId, titleText, mode){
   lines.push("=".repeat(60));
   lines.push("");
 
-  const inputs = gatherInputsSummary(mode);
-  lines.push(...inputs.lines);
-  lines.push("");
-  lines.push("=".repeat(60));
-  lines.push("RESULTS");
-  lines.push("=".repeat(60));
-  lines.push("");
-
   // Walk the panel's headings, result cards, and table rows in document order.
+  const walker = panel.querySelectorAll("h2, .result-card, tr");
+  const seen = new Set();
   panel.childNodes.forEach(node => collectText(node, lines));
 
   function collectText(node, out){
     if(node.nodeType !== 1) return;
-    if(node.classList && node.classList.contains("export-toolbar")) return;
     if(node.tagName === "H2"){
       out.push("");
       out.push(node.textContent.trim());
@@ -1254,7 +1311,6 @@ function saveResultsAsText(panelId, titleText, mode){
         else if(cells.length===1) out.push(cells[0]);
       });
     } else if(node.tagName === "DIV" || node.tagName === "P"){
-      if(node.classList && node.classList.contains("export-toolbar")) return;
       const txt = node.textContent.trim();
       if(txt && !node.querySelector("table, h2, .results-grid")) out.push(txt);
       node.childNodes.forEach(child => collectText(child, out));
@@ -1273,11 +1329,11 @@ function saveResultsAsText(panelId, titleText, mode){
   URL.revokeObjectURL(url);
 }
 
-function exportToolbarHTML(panelId, titleText, mode){
+function exportToolbarHTML(panelId, titleText){
   return `
     <div class="export-toolbar">
-      <button onclick="printResults('${panelId}','${titleText}','${mode}')">&#128438; PRINT / SAVE PDF</button>
-      <button onclick="saveResultsAsText('${panelId}','${titleText}','${mode}')">&#128190; SAVE RESULTS (.TXT)</button>
+      <button onclick="printResults('${panelId}','${titleText}')">&#128438; PRINT / SAVE PDF</button>
+      <button onclick="saveResultsAsText('${panelId}','${titleText}')">&#128190; SAVE RESULTS (.TXT)</button>
     </div>`;
 }
 
@@ -1285,9 +1341,11 @@ function setMode(m){
   document.getElementById("modeDensity").classList.toggle("active", m==="density");
   document.getElementById("modeJT").classList.toggle("active", m==="jt");
   document.getElementById("modeCV").classList.toggle("active", m==="cv");
+  document.getElementById("modeMix").classList.toggle("active", m==="mix");
   document.getElementById("densityMode").style.display = (m==="density") ? "" : "none";
   document.getElementById("jtMode").style.display = (m==="jt") ? "" : "none";
   document.getElementById("cvMode").style.display = (m==="cv") ? "" : "none";
+  document.getElementById("mixMode").style.display = (m==="mix") ? "" : "none";
 }
 
 // ============================================================
@@ -1400,6 +1458,7 @@ function tsatPure(comp, P){
   // More accurate than a PR-EOS fugacity-equality search (Antoine is fit to real
   // experimental vapor-pressure data). Returns null if P is outside the
   // correlation's validity range for this component.
+  if(!ANTOINE[comp]) return null;
   const Pbar = P / 1e5;
   if(Pbar <= 0) return null;
   const log10P = Math.log10(Pbar);
@@ -1486,10 +1545,19 @@ function dewPointT(comps, yIn, P, tol=1e-6, maxIter=100){
 // ============================================================
 const LFL = {
   Methane: 5.0, Ethane: 3.0, Ethylene: 2.7, Propane: 2.1, Propylene: 2.0, Hydrogen: 4.0,
-  Oxygen: null, Nitrogen: null, Water: null
+  Oxygen: null, Nitrogen: null, Water: null,
+  // Extended set: Antoine vapor-pressure correlations aren't available yet for
+  // these, so they're excluded from the flash-point (LFL mixing rule) estimate
+  // rather than risk an unvalidated result. Density/Cp/JT calcs are unaffected.
+  "1,3-Butadiene": null, "n-Butane": null, "C5H10 (1-Pentene)": null,
+  "Benzene": null, "Toluene": null, "Vinyl Chloride (VCM)": null,
+  "1,2-Dichloroethane (EDC)": null, "Hydrogen Chloride (HCl)": null,
+  "Chlorine": null, "Ethylene Oxide (EO)": null, "Ethylene Glycol (EG)": null,
+  "n-Hexane": null, "Methanol": null, "Carbon Dioxide (CO2)": null
 };
 
 function psatAntoine(comp, T){
+  if(!ANTOINE[comp]) return null;
   for(const [TrLo, TrHi, A, B, C] of ANTOINE[comp]){
     if(T >= TrLo-2 && T <= TrHi+2){
       const log10P = A - B/(T+C);
@@ -1651,28 +1719,95 @@ function isenthalpicFlash(comps, z, T1, P1, P2, tol=1e-3, maxIter=100){
 }
 
 // ============================================================
+// TWO-STREAM MIXING engine
+// ============================================================
+function streamMolarEnthalpy(comps, z, T, P, phase){
+  const Hig = hIdealMix(comps, z, T);
+  const {Hdep} = hDeparture(comps, z, T, P, phase);
+  return Hig + Hdep;
+}
+
+function combineStreams(comps1, z1, F1, comps2, z2, F2){
+  const map = {};
+  comps1.forEach((c,i)=>{ map[c] = (map[c]||0) + z1[i]*F1; });
+  comps2.forEach((c,i)=>{ map[c] = (map[c]||0) + z2[i]*F2; });
+  const Ftotal = F1 + F2;
+  const comps = Object.keys(map);
+  const z = comps.map(c => map[c]/Ftotal);
+  return {comps, z, Ftotal};
+}
+
+function solveTForH(getHFn, Htarget, Tguess, tol=1e-3, maxIter=150){
+  function f(T){ return getHFn(T) - Htarget; }
+  let Tstart = Tguess;
+  let fStart = f(Tstart);
+  if(Math.abs(fStart) < tol) return {T:Tstart, converged:true, iters:1};
+  let step=5.0, Tlo,flo,Thi,fHi;
+  if(fStart>0){
+    Thi=Tstart; fHi=fStart;
+    Tlo = Tstart-step;
+    flo = f(Tlo);
+    let ei=0;
+    while(flo>0 && ei<50){ step*=1.7; Thi=Tlo; fHi=flo; Tlo-=step; flo=f(Tlo); ei++; }
+  } else {
+    Tlo=Tstart; flo=fStart;
+    Thi=Tstart+step;
+    fHi=f(Thi);
+    let ei=0;
+    while(fHi<0 && ei<50){ step*=1.7; Tlo=Thi; flo=fHi; Thi+=step; fHi=f(Thi); ei++; }
+  }
+  let converged=false, Tmid=Tlo, fmid=flo, it;
+  for(it=0; it<maxIter; it++){
+    Tmid = 0.5*(Tlo+Thi);
+    fmid = f(Tmid);
+    if(Math.abs(fmid)<tol){ converged=true; break; }
+    if((flo<0) === (fmid<0)){ Tlo=Tmid; flo=fmid; } else { Thi=Tmid; fHi=fmid; }
+  }
+  return {T:Tmid, converged, iters:it+1};
+}
+
+// Solves for the rigorous outlet state (T, phase split) of the combined stream at Pf
+// given the target molar enthalpy Havg. Always returns {beta, Zl, Zv, x, y} so the
+// renderer can treat pure and multi-component outlets identically.
+function solveOutletState(combComps, combZ, Havg, Pf, Tguess){
+  if(combComps.length === 1){
+    const comp = combComps[0];
+    const Tsat = tsatPure(comp, Pf);
+    if(Tsat !== null){
+      const HigSat = hIdealMix([comp],[1.0],Tsat);
+      const {Hdep:HdepL, Z:Zl} = hDeparture([comp],[1.0],Tsat,Pf,"liquid");
+      const {Hdep:HdepV, Z:Zv} = hDeparture([comp],[1.0],Tsat,Pf,"vapor");
+      const HliqSat = HigSat+HdepL, HvapSat = HigSat+HdepV;
+      if(Havg >= HliqSat && Havg <= HvapSat){
+        const beta = HvapSat>HliqSat ? (Havg-HliqSat)/(HvapSat-HliqSat) : 0;
+        return {T:Tsat, converged:true, iters:1, state:{beta, Zl, Zv, x:[1.0], y:[1.0]}};
+      }
+    }
+    const getH = (T)=>totalEnthalpyPure(comp, T, Pf).H;
+    const sol = solveTForH(getH, Havg, Tguess);
+    const st = totalEnthalpyPure(comp, sol.T, Pf);
+    return {T: sol.T, converged: sol.converged, iters: sol.iters,
+            state:{ beta: st.beta,
+                    Zl: st.phase==="liquid" ? st.Z : null,
+                    Zv: st.phase==="vapor" ? st.Z : null,
+                    x:[1.0], y:[1.0] }};
+  } else {
+    const getH = (T)=>totalEnthalpy(combComps, combZ, T, Pf).H;
+    const sol = solveTForH(getH, Havg, Tguess);
+    const st = totalEnthalpy(combComps, combZ, sol.T, Pf);
+    return {T: sol.T, converged: sol.converged, iters: sol.iters, state: st};
+  }
+}
+
+// ============================================================
 // JT UI wiring
 // ============================================================
 function buildJTCompTable(){
-  const tbody = document.querySelector("#jCompTable tbody");
-  tbody.innerHTML = "";
-  const defaults = {Methane:0, Ethane:0, Ethylene:0, Propane:1, Propylene:0,
-                     Oxygen:0, Nitrogen:0, Hydrogen:0, Water:0};
-  ORDER.forEach(name=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td><input type="number" step="0.0001" min="0" max="1" value="${defaults[name]}" data-comp="${name}" oninput="updateJTSum()"></td>`;
-    tbody.appendChild(tr);
-  });
-  updateJTSum();
+  const defaults = {Propane:1};
+  buildToggleCompTable("jCompTable", defaults, "updateJTSum");
 }
 function updateJTSum(){
-  const inputs = document.querySelectorAll("#jCompTable input");
-  let sum = 0;
-  inputs.forEach(inp => sum += parseFloat(inp.value)||0);
-  const el = document.getElementById("jCompSum");
-  el.textContent = "Sum: " + sum.toFixed(4);
-  el.className = "comp-sum" + (Math.abs(sum-1)>0.0005 ? " err" : "");
-  return sum;
+  return sumToggleTable("jCompTable", "jCompSum");
 }
 
 function runJT(){
@@ -1693,15 +1828,8 @@ function runJT(){
     if(T1 <= 0 || P1 <= 0 || P2 <= 0) throw new Error("Temperature and pressures must be positive (absolute).");
     if(P2 >= P1) throw new Error("Outlet pressure P2 must be less than inlet pressure P1 (this is a pressure REDUCTION).");
 
-    const inputs = document.querySelectorAll("#jCompTable input");
-    let comps = [], z = [];
-    let sum = 0;
-    inputs.forEach(inp=>{
-      const v = parseFloat(inp.value)||0;
-      sum += v;
-      if(v > 0){ comps.push(inp.dataset.comp); z.push(v); }
-    });
-    if(comps.length===0) throw new Error("Enter at least one non-zero mole fraction.");
+    let {comps, z, sum} = collectActiveComps("jCompTable");
+    if(comps.length===0) throw new Error("Tick at least one component and enter a non-zero mole fraction.");
     if(Math.abs(sum-1) > 0.0005){
       z = z.map(v=>v/sum);
       warnBox.textContent = `Note: composition summed to ${sum.toFixed(4)}, auto-normalized to 1.0000.`;
@@ -1776,7 +1904,7 @@ function renderJTResults(r, comps, z, T1, P1, P2){
       <tr><th>Component</th><th>Feed z<sub>i</sub></th><th>Liquid x<sub>i</sub></th><th>Vapor y<sub>i</sub></th></tr>
       ${compRows}
     </table>` : ""}
-    ${exportToolbarHTML('jResultsPanel','Isenthalpic_JT_Results','j')}
+    ${exportToolbarHTML('jResultsPanel','Isenthalpic_JT_Results')}
   `;
   document.getElementById("jResultsPanel").innerHTML = html;
 }
@@ -1793,7 +1921,27 @@ const CALORIFIC = {
   Hydrogen:  {GCV:285.83,  NCV:241.82},
   Oxygen:    {GCV:0.0,     NCV:0.0},
   Nitrogen:  {GCV:0.0,     NCV:0.0},
-  Water:     {GCV:0.0,     NCV:0.0}
+  Water:     {GCV:0.0,     NCV:0.0},
+  "Carbon Dioxide (CO2)": {GCV:0.0, NCV:0.0},
+  // --- Extended set: approximate literature heats of combustion (ideal-gas
+  // basis, kJ/mol, 25°C). Chlorinated species (VCM, EDC) form HCl rather than
+  // only H2O/CO2 on combustion; HCl and Chlorine themselves don't combust and
+  // are treated as inert (zero heating value), same convention as O2/N2/H2O.
+  // Verify all of these against GPA 2145/ISO 6976 or plant lab data before
+  // custody-transfer or fiscal use. ---
+  "1,3-Butadiene":            {GCV:2541.5, NCV:2409.5},
+  "n-Butane":                 {GCV:2877.6, NCV:2657.6},
+  "C5H10 (1-Pentene)":        {GCV:3138.3, NCV:2918.3},
+  "Benzene":                  {GCV:3301.5, NCV:3169.5},
+  "Toluene":                  {GCV:3948.3, NCV:3772.3},
+  "Methanol":                 {GCV:763.5,  NCV:675.5},
+  "n-Hexane":                 {GCV:4194.7, NCV:3886.7},
+  "Vinyl Chloride (VCM)":     {GCV:719.6,  NCV:675.6},
+  "1,2-Dichloroethane (EDC)": {GCV:1050.0, NCV:1006.0},
+  "Ethylene Oxide (EO)":      {GCV:1305.6, NCV:1217.6},
+  "Ethylene Glycol (EG)":     {GCV:1242.2, NCV:1110.2},
+  "Hydrogen Chloride (HCl)":  {GCV:0.0,    NCV:0.0},
+  "Chlorine":                 {GCV:0.0,    NCV:0.0}
 };
 const MW_AIR = 28.9647;
 
@@ -1826,26 +1974,30 @@ function calorificValue(comps, zIn, TrefC){
 // CV UI wiring
 // ============================================================
 function buildCVCompTable(){
-  const tbody = document.querySelector("#cvCompTable tbody");
-  tbody.innerHTML = "";
-  const defaults = {Methane:0.90, Ethane:0.05, Ethylene:0, Propane:0.02, Propylene:0,
-                     Oxygen:0, Nitrogen:0.03, Hydrogen:0, Water:0};
-  ORDER.forEach(name=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td><input type="number" step="0.0001" min="0" max="1" value="${defaults[name]}" data-comp="${name}" oninput="updateCVSum()"></td>`;
-    tbody.appendChild(tr);
-  });
-  updateCVSum();
+  const defaults = {Methane:0.90, Ethane:0.05, Propane:0.02, Nitrogen:0.03};
+  buildToggleCompTable("cvCompTable", defaults, "updateCVSum");
 }
 
 function updateCVSum(){
-  const inputs = document.querySelectorAll("#cvCompTable input");
-  let sum = 0;
-  inputs.forEach(inp => sum += parseFloat(inp.value)||0);
-  const el = document.getElementById("cvCompSum");
-  el.textContent = "Sum: " + sum.toFixed(4);
-  el.className = "comp-sum" + (Math.abs(sum-1)>0.0005 ? " err" : "");
-  return sum;
+  return sumToggleTable("cvCompTable", "cvCompSum");
+}
+
+// ============================================================
+// MIXING tab: two-stream composition tables (reuse shared toggle builder)
+// ============================================================
+function buildMix1CompTable(){
+  const defaults = {Methane:0.20, Ethane:0.20, Ethylene:0.20, Propane:0.20, Propylene:0.20};
+  buildToggleCompTable("mix1CompTable", defaults, "updateMix1Sum");
+}
+function updateMix1Sum(){
+  return sumToggleTable("mix1CompTable", "mix1CompSum");
+}
+function buildMix2CompTable(){
+  const defaults = {Propane:1.0};
+  buildToggleCompTable("mix2CompTable", defaults, "updateMix2Sum");
+}
+function updateMix2Sum(){
+  return sumToggleTable("mix2CompTable", "mix2CompSum");
 }
 
 function runCV(){
@@ -1854,15 +2006,8 @@ function runCV(){
   try{
     const TrefC = parseFloat(document.getElementById("cvTref").value);
 
-    const inputs = document.querySelectorAll("#cvCompTable input");
-    let comps = [], z = [];
-    let sum = 0;
-    inputs.forEach(inp=>{
-      const v = parseFloat(inp.value)||0;
-      sum += v;
-      if(v > 0){ comps.push(inp.dataset.comp); z.push(v); }
-    });
-    if(comps.length===0) throw new Error("Enter at least one non-zero mole fraction.");
+    let {comps, z, sum} = collectActiveComps("cvCompTable");
+    if(comps.length===0) throw new Error("Tick at least one component and enter a non-zero mole fraction.");
     if(Math.abs(sum-1) > 0.0005){
       z = z.map(v=>v/sum);
       warnBox.textContent = `Note: composition summed to ${sum.toFixed(4)}, auto-normalized to 1.0000.`;
@@ -1913,14 +2058,221 @@ function renderCVResults(r, comps, z){
       <tr><td>Wobbe Index (net)</td><td>${r.wobbeNet.toFixed(3)} MJ/m&sup3;</td></tr>
       <tr><td>Composition (mole basis)</td><td style="text-align:left; max-width:260px;">${compList}</td></tr>
     </table>
-    ${exportToolbarHTML('cvResultsPanel','Calorific_Value_Results','cv')}
+    ${exportToolbarHTML('cvResultsPanel','Calorific_Value_Results')}
   `;
   document.getElementById("cvResultsPanel").innerHTML = html;
+}
+
+// ============================================================
+// MIXING tab UI wiring
+// ============================================================
+function runMix(){
+  const warnBox = document.getElementById("mixWarnBox");
+  warnBox.className = "warn"; warnBox.textContent = "";
+  const warnMsgs = [];
+  try{
+    // --- Stream 1 ---
+    const t1Val = parseFloat(document.getElementById("mix1TempVal").value);
+    const t1Unit = document.getElementById("mix1TempUnit").value;
+    const p1Val = parseFloat(document.getElementById("mix1PresVal").value);
+    const p1Unit = document.getElementById("mix1PresUnit").value;
+    const T1 = toKelvin(t1Val, t1Unit);
+    const P1 = toPascal(p1Val, p1Unit);
+    const phase1 = mixPhaseState[1];
+    const flow1Val = parseFloat(document.getElementById("mix1FlowVal").value);
+    const flow1Unit = document.getElementById("mix1FlowUnit").value;
+
+    let {comps: comps1, z: z1, sum: sum1} = collectActiveComps("mix1CompTable");
+    if(comps1.length===0) throw new Error("Stream 1: tick at least one component and enter a non-zero mole fraction.");
+    if(Math.abs(sum1-1) > 0.0005){
+      z1 = z1.map(v=>v/sum1);
+      warnMsgs.push(`Stream 1 composition summed to ${sum1.toFixed(4)}, auto-normalized to 1.0000.`);
+    }
+    if(basisState.mix1 === "wt"){
+      z1 = wtToMol(comps1, z1);
+      warnMsgs.push("Stream 1 input interpreted as wt% and converted to mole fractions.");
+    }
+
+    // --- Stream 2 ---
+    const t2Val = parseFloat(document.getElementById("mix2TempVal").value);
+    const t2Unit = document.getElementById("mix2TempUnit").value;
+    const p2Val = parseFloat(document.getElementById("mix2PresVal").value);
+    const p2Unit = document.getElementById("mix2PresUnit").value;
+    const T2 = toKelvin(t2Val, t2Unit);
+    const P2 = toPascal(p2Val, p2Unit);
+    const phase2 = mixPhaseState[2];
+    const flow2Val = parseFloat(document.getElementById("mix2FlowVal").value);
+    const flow2Unit = document.getElementById("mix2FlowUnit").value;
+
+    let {comps: comps2, z: z2, sum: sum2} = collectActiveComps("mix2CompTable");
+    if(comps2.length===0) throw new Error("Stream 2: tick at least one component and enter a non-zero mole fraction.");
+    if(Math.abs(sum2-1) > 0.0005){
+      z2 = z2.map(v=>v/sum2);
+      warnMsgs.push(`Stream 2 composition summed to ${sum2.toFixed(4)}, auto-normalized to 1.0000.`);
+    }
+    if(basisState.mix2 === "wt"){
+      z2 = wtToMol(comps2, z2);
+      warnMsgs.push("Stream 2 input interpreted as wt% and converted to mole fractions.");
+    }
+
+    if(T1<=0 || P1<=0 || T2<=0 || P2<=0) throw new Error("Temperatures and pressures must be positive (absolute).");
+    if(!(flow1Val > 0) || !(flow2Val > 0)) throw new Error("Enter a positive flow rate for both streams.");
+
+    const MW1 = comps1.reduce((s,c,i)=>s+z1[i]*COMPONENTS[c].MW, 0);
+    const MW2 = comps2.reduce((s,c,i)=>s+z2[i]*COMPONENTS[c].MW, 0);
+    const F1 = (flow1Unit === "kgh") ? flow1Val/MW1 : flow1Val; // kmol/h
+    const F2 = (flow2Unit === "kgh") ? flow2Val/MW2 : flow2Val; // kmol/h
+
+    const pfVal = parseFloat(document.getElementById("mixPfVal").value);
+    const pfUnit = document.getElementById("mixPfUnit").value;
+    const Pf = toPascal(pfVal, pfUnit);
+    if(Pf <= 0) throw new Error("Final mixed pressure must be positive (absolute).");
+    if(Pf > Math.min(P1,P2) + 1){
+      warnMsgs.push("Note: final mixed pressure exceeds one or both inlet pressures — confirm this is physically intended (e.g. a pump/compressor downstream), not a passive tee/header.");
+    }
+
+    const H1 = streamMolarEnthalpy(comps1, z1, T1, P1, phase1);
+    const H2 = streamMolarEnthalpy(comps2, z2, T2, P2, phase2);
+
+    const {comps: combComps, z: combZ, Ftotal} = combineStreams(comps1, z1, F1, comps2, z2, F2);
+    const Havg = (F1*H1 + F2*H2) / Ftotal;
+    const Tguess = (F1*T1 + F2*T2) / Ftotal;
+
+    const outletSol = solveOutletState(combComps, combZ, Havg, Pf, Tguess);
+    if(!outletSol.converged){
+      warnMsgs.push(`Note: energy balance did not fully converge within the iteration limit — result is the best estimate after ${outletSol.iters} iterations.`);
+    }
+
+    if(warnMsgs.length){
+      warnBox.textContent = warnMsgs.join(" ");
+      warnBox.classList.add("show");
+    }
+
+    renderMixResults({
+      comps1, z1, T1, P1, phase1, F1, MW1, H1,
+      comps2, z2, T2, P2, phase2, F2, MW2, H2,
+      combComps, combZ, Ftotal, Pf, Havg, outletSol
+    });
+  } catch(e){
+    warnBox.textContent = "Error: " + e.message;
+    warnBox.classList.add("show");
+    document.getElementById("mixResultsPanel").innerHTML = '<h2>Results</h2><div class="placeholder">Calculation failed — see message above.</div>';
+  }
+}
+
+function renderMixResults(r){
+  const {comps1,z1,T1,P1,phase1,F1,MW1,H1,
+         comps2,z2,T2,P2,phase2,F2,MW2,H2,
+         combComps,combZ,Ftotal,Pf,Havg,outletSol} = r;
+
+  const Tf = outletSol.T;
+  const st = outletSol.state;
+  const beta = st.beta;
+  const isTwoPhase = beta > 1e-6 && beta < 1-1e-6;
+  const phaseLabel = isTwoPhase ? "Two-Phase (VLE)" : (beta >= 1-1e-6 ? "Vapor" : "Liquid");
+  const phaseClass = isTwoPhase ? "vapor" : (beta >= 1-1e-6 ? "vapor" : "liquid");
+
+  const MWmix = combComps.reduce((s,c,i)=>s+combZ[i]*COMPONENTS[c].MW, 0);
+
+  let rhoOut, CpOut, kOut, VOut, extraRows = "";
+  if(!isTwoPhase){
+    const activePhase = (beta >= 1-1e-6) ? "vapor" : "liquid";
+    const Zout = (activePhase === "vapor") ? st.Zv : st.Zl;
+    VOut = Zout*R*Tf/Pf; // m3/mol
+    rhoOut = (MWmix/1000)/VOut; // kg/m3
+    const cpr = cpDeparture(combComps, combZ, Tf, Pf, activePhase);
+    CpOut = cpr.Cp_real;
+    kOut = cpr.k;
+  } else {
+    const Vv = st.Zv*R*Tf/Pf, Vl = st.Zl*R*Tf/Pf;
+    VOut = beta*Vv + (1-beta)*Vl; // apparent molar volume, additive-volume mixing rule
+    rhoOut = (MWmix/1000)/VOut;
+    const rhoV = (MWmix/1000)/Vv, rhoL = (MWmix/1000)/Vl;
+    const cprV = cpDeparture(combComps, st.y, Tf, Pf, "vapor");
+    const cprL = cpDeparture(combComps, st.x, Tf, Pf, "liquid");
+    const cpV = cprV.Cp_real, cpL = cprL.Cp_real;
+    CpOut = beta*cpV + (1-beta)*cpL; // flow-weighted average, informational only
+    kOut = cprV.k; // k is reported for the vapor phase (the phase it's normally used for — relief/compressible flow)
+    extraRows = `
+      <tr><td>Vapor-phase density</td><td>${rhoV.toFixed(4)} kg/m&sup3;</td></tr>
+      <tr><td>Liquid-phase density</td><td>${rhoL.toFixed(4)} kg/m&sup3;</td></tr>
+      <tr><td>Vapor-phase Cp</td><td>${cpV.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Liquid-phase Cp</td><td>${cpL.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Vapor-phase k = Cp/Cv</td><td>${cprV.k.toFixed(4)}</td></tr>
+      <tr><td>Liquid-phase k = Cp/Cv</td><td>${cprL.k.toFixed(4)}</td></tr>`;
+  }
+
+  const compList = combComps.map((c,i)=> `${c} (${(combZ[i]*100).toFixed(2)}%)`).join(", ");
+
+  let vleRows = "";
+  if(isTwoPhase){
+    combComps.forEach((c,i)=>{
+      vleRows += `<tr><td>${c}</td><td>${combZ[i].toFixed(4)}</td><td>${st.x[i].toFixed(4)}</td><td>${st.y[i].toFixed(4)}</td></tr>`;
+    });
+  }
+
+  const html = `
+    <h2>Mixed Outlet Properties</h2>
+    <div class="results-grid">
+      <div class="result-card ${phaseClass}">
+        <div class="label">Outlet Temperature</div>
+        <div class="value">${(Tf-273.15).toFixed(2)}<span class="unit">&deg;C</span></div>
+      </div>
+      <div class="result-card ${phaseClass}">
+        <div class="label">Outlet Density</div>
+        <div class="value">${rhoOut.toFixed(3)}<span class="unit">kg/m&sup3;</span></div>
+      </div>
+      <div class="result-card ${phaseClass}">
+        <div class="label">k = Cp/Cv${isTwoPhase?' (vapor)':''}</div>
+        <div class="value">${kOut.toFixed(4)}</div>
+      </div>
+    </div>
+    <table class="detail-table">
+      <tr><td>Outlet phase</td><td>${phaseLabel}</td></tr>
+      <tr><td>Outlet vapor fraction, &beta;</td><td>${beta.toFixed(6)}</td></tr>
+      <tr><td>Outlet temperature</td><td>${(Tf-273.15).toFixed(3)} &deg;C (${Tf.toFixed(2)} K)</td></tr>
+      <tr><td>Outlet (mixed) pressure</td><td>${((Pf-101325)/98066.5).toFixed(4)} kg/cm&sup2;g (${(Pf/1e5).toFixed(4)} bar-a)</td></tr>
+      <tr><td>Outlet Cp/Cv ratio, k${isTwoPhase?' (vapor phase)':''}</td><td>${kOut.toFixed(4)}</td></tr>
+      <tr><td>Outlet density</td><td>${rhoOut.toFixed(4)} kg/m&sup3;</td></tr>
+      <tr><td>Outlet Cp (real gas${isTwoPhase?', flow-weighted avg of both phases':''})</td><td>${CpOut.toFixed(4)} J/mol&middot;K</td></tr>
+      <tr><td>Outlet molar volume (apparent)</td><td>${(VOut*1000).toFixed(4)} L/mol</td></tr>
+      <tr><td>Outlet mixture molecular weight</td><td>${MWmix.toFixed(3)} g/mol</td></tr>
+      ${extraRows}
+      <tr><td>Total outlet molar flow</td><td>${Ftotal.toFixed(4)} kmol/h</td></tr>
+      <tr><td>Total outlet mass flow</td><td>${(Ftotal*MWmix).toFixed(2)} kg/h</td></tr>
+      <tr><td>Combined composition (mole basis)</td><td style="text-align:left; max-width:260px;">${compList}</td></tr>
+      <tr><td>Energy balance</td><td>solved in ${outletSol.iters} iteration(s), ${outletSol.converged?"converged":"NOT fully converged"}</td></tr>
+    </table>
+    ${vleRows ? `
+    <h2 style="margin-top:18px;">Outlet Phase Compositions (VLE)</h2>
+    <table class="flash-table">
+      <tr><th>Component</th><th>Mixed Feed z<sub>i</sub></th><th>Liquid x<sub>i</sub></th><th>Vapor y<sub>i</sub></th></tr>
+      ${vleRows}
+    </table>` : ""}
+    <h2 style="margin-top:18px;">Inlet Stream Summary</h2>
+    <table class="flash-table">
+      <tr><th>Property</th><th>Stream 1</th><th>Stream 2</th></tr>
+      <tr><td>Temperature</td><td>${(T1-273.15).toFixed(2)} &deg;C</td><td>${(T2-273.15).toFixed(2)} &deg;C</td></tr>
+      <tr><td>Pressure</td><td>${(P1/1e5).toFixed(3)} bar</td><td>${(P2/1e5).toFixed(3)} bar</td></tr>
+      <tr><td>Declared phase</td><td>${phase1}</td><td>${phase2}</td></tr>
+      <tr><td>Molar flow</td><td>${F1.toFixed(4)} kmol/h</td><td>${F2.toFixed(4)} kmol/h</td></tr>
+      <tr><td>Mass flow</td><td>${(F1*MW1).toFixed(2)} kg/h</td><td>${(F2*MW2).toFixed(2)} kg/h</td></tr>
+      <tr><td>Molecular weight</td><td>${MW1.toFixed(3)} g/mol</td><td>${MW2.toFixed(3)} g/mol</td></tr>
+      <tr><td>Molar enthalpy (ref-relative)</td><td>${H1.toFixed(2)} J/mol</td><td>${H2.toFixed(2)} J/mol</td></tr>
+      <tr><td>Composition (mole basis)</td>
+        <td style="text-align:left;">${comps1.map((c,i)=>`${c} (${(z1[i]*100).toFixed(1)}%)`).join(", ")}</td>
+        <td style="text-align:left;">${comps2.map((c,i)=>`${c} (${(z2[i]*100).toFixed(1)}%)`).join(", ")}</td></tr>
+    </table>
+    ${exportToolbarHTML('mixResultsPanel','Two_Stream_Mixing_Results')}
+  `;
+  document.getElementById("mixResultsPanel").innerHTML = html;
 }
 
 buildCompTable();
 buildJTCompTable();
 buildCVCompTable();
+buildMix1CompTable();
+buildMix2CompTable();
 </script>
 </body>
 </html>
